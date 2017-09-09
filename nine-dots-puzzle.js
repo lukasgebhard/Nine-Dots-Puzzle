@@ -31,7 +31,7 @@
     };
 
     Coordinate.prototype.getPosition = function(horizontal) {
-        var canvas = document.getElementById(context.canvasId); // TODO remove coupling
+        var canvas = document.getElementById(context.canvasId);
         var canvasSize = canvas.width;
         var rasterSpacing = canvasSize / (this.raster.size + 2);
         var padding = rasterSpacing;
@@ -106,29 +106,21 @@
     };
 
     function Canvas() {
-        function getCanvas() { // TODO correct? -> Understand <this>
-            if (!this.canvas) {
-                this.canvas = document.getElementById(context.canvasId);
-            }
-
-            return this.canvas;
-        }
-
-        this.positionX = getCanvas().offsetLeft;
-        this.positionY = getCanvas().offsetTop;
-        this.height = getCanvas().height;
-        this.width = getCanvas().width;
+        // TODO remove coupling: insert canvas to DOM programmatically
+        this.canvas = document.getElementById(context.canvasId);
+        this.positionX = this.canvas.offsetLeft;
+        this.positionY = this.canvas.offsetTop;
+        this.height = this.canvas.height;
+        this.width = this.canvas.width;
         this.raster = new Raster(this);
 
-        getCanvas().addEventListener("click", this.onClick.bind(this), false); // TODO understand <this>
+        this.canvas.addEventListener("click", function(event) {
+            var clickX = event.pageX - this.positionX;
+            var clickY = event.pageY - this.positionY;
+
+            new Polyline(this, this.raster.getCoordinate(clickX, clickY));
+        });
     }
-
-    Canvas.prototype.onClick = function(event) {
-        var clickX = event.pageX - this.positionX;
-        var clickY = event.pageY - this.positionY;
-
-        new Polyline(this, this.raster.getCoordinate(clickX, clickY));
-    };
 
     Canvas.prototype.draw = function() {
         this.raster.draw();
