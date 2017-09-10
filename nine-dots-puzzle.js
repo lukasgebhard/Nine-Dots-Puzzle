@@ -123,20 +123,46 @@
     };
 
     Canvas.prototype.onClick = function(event) {
-        new Polyline(this, this.raster.getCoordinate(event.layerX, event.layerY));
-    }
+        var node = this.raster.getCoordinate(event.layerX, event.layerY);
+
+        if (!this.polyline) {
+            this.polyline = new Polyline(this);
+        }
+
+        this.polyline.addNode(node);
+    };
 
     Canvas.prototype.getCanvas = function() {
         return document.getElementById(context.canvasId);
-    }
+    };
 
-    function Polyline(parent, startNode) {
+    function Polyline(parent) {
         this.canvas = parent;
         this.nodes = new Array(3);
-        this.nodes[0] = startNode;
-
-        alert("Clicked at (" + startNode.x + ", " + startNode.y + ").");
+        this.nodeCount = 0;
     }
+
+    Polyline.prototype.addNode = function(newNode) {
+        this.nodes[this.nodeCount] = newNode;
+        ++this.nodeCount;
+
+        alert(this.toString());
+    };
+
+    Polyline.prototype.toString = function() {
+        var stringRepresentation = "Polyline(";
+        var i;
+
+        for (i = 0; i < this.nodeCount; ++i) {
+            stringRepresentation += "(" + this.nodes[i].x + "," + this.nodes[i].y + ")";
+
+            if (i < this.nodeCount - 1) {
+                stringRepresentation += ", ";
+            }
+        }
+        stringRepresentation += ")";
+        return stringRepresentation;
+    };
 
     (function() {
         var canvas = new Canvas();
