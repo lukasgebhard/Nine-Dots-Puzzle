@@ -1,6 +1,7 @@
 (function() {
     "use strict";
 
+    // TODO to stylesheet
     var context = {
         canvasId: "canvas-nine-dots-puzzle",
         dotColor: "blue",
@@ -33,7 +34,7 @@
     Coordinate.prototype.getPosition = function(horizontal) {
         var canvas = document.getElementById(context.canvasId);
         var canvasSize = canvas.width;
-        var rasterSpacing = canvasSize / (this.raster.size + 2);
+        var rasterSpacing = canvasSize / (this.raster.size + 1);
         var padding = rasterSpacing;
 
         return horizontal ? padding + this.y * rasterSpacing : padding + this.x * rasterSpacing;
@@ -41,7 +42,7 @@
 
     function Raster(parent) {
         var x, y, dot;
-        this.raster = parent;
+        this.canvas = parent;
         this.coordinates = new Array(this.size);
 
         for (x = 0; x < this.size; ++x) {
@@ -57,7 +58,7 @@
         }
     }
 
-    Raster.prototype.size = 8;
+    Raster.prototype.size = 9;
     Raster.prototype.dotSpacing = 2;
 
     Raster.prototype.getDots = function() {
@@ -87,44 +88,47 @@
         }
     };
 
-    Raster.prototype.getCoordinate = function(clickX, clickY) {
+    Raster.prototype.getGridIndex = function(clickPosition) {
         var canvasSize = this.canvas.width;
-        var rasterSpacing = canvasSize / (this.size + 2);
+        var rasterSpacing = canvasSize / (this.size + 1);
         var padding = rasterSpacing;
+        var gridIndex = Math.round((clickPosition - padding) / rasterSpacing);
 
-        function getGridIndex(clickPosition) {
-            var gridIndex = ((clickPosition - padding) / rasterSpacing).int();
-
-            if ((clickPosition % rasterSpacing) > (rasterSpacing / 2)) {
-                ++gridIndex;
-            }
-
-            return gridIndex;
+        if (gridIndex < 0) {
+            gridIndex = 0;
+        }
+        if (gridIndex >= this.size) {
+            gridIndex = this.size - 1;
         }
 
-        return this.coordinates[getGridIndex(clickX), getGridIndex(clickY)];
+        return gridIndex;
+    };
+
+    Raster.prototype.getCoordinate = function(clickX, clickY) {
+        return this.coordinates[this.getGridIndex(clickX)][this.getGridIndex(clickY)];
     };
 
     function Canvas() {
         // TODO remove coupling: insert canvas to DOM programmatically
         this.canvas = document.getElementById(context.canvasId);
-        this.positionX = this.canvas.offsetLeft;
-        this.positionY = this.canvas.offsetTop;
         this.height = this.canvas.height;
         this.width = this.canvas.width;
         this.raster = new Raster(this);
 
-        this.canvas.addEventListener("click", function(event) {
-            var clickX = event.pageX - this.positionX;
-            var clickY = event.pageY - this.positionY;
-
-            new Polyline(this, this.raster.getCoordinate(clickX, clickY));
-        });
+        this.canvas.addEventListener("click", this.onClick.bind(this));
     }
 
     Canvas.prototype.draw = function() {
         this.raster.draw();
     };
+
+    Canvas.prototype.onClick = function(event) {
+        new Polyline(this, this.raster.getCoordinate(event.layerX, event.layerY));
+    }
+
+    Canvas.prototype.getCanvas = function() {
+        return document.getElementById(context.canvasId);
+    }
 
     function Polyline(parent, startNode) {
         this.canvas = parent;
