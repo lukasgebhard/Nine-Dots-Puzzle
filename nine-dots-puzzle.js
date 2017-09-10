@@ -18,7 +18,7 @@
     }
 
     Coordinate.prototype.draw = function() {
-        var canvas = document.getElementById(context.canvasId);
+        var canvas = this.raster.canvasWrapper.canvas;
         var canvasContext = canvas.getContext("2d");
 
         if (this.isDot) {
@@ -32,7 +32,7 @@
     };
 
     Coordinate.prototype.getPosition = function(horizontal) {
-        var canvas = document.getElementById(context.canvasId);
+        var canvas = this.raster.canvasWrapper.canvas;
         var canvasSize = canvas.width;
         var rasterSpacing = canvasSize / (this.raster.size + 1);
         var padding = rasterSpacing;
@@ -42,7 +42,7 @@
 
     function Raster(parent) {
         var x, y, dot;
-        this.canvas = parent;
+        this.canvasWrapper = parent;
         this.coordinates = new Array(this.size);
 
         for (x = 0; x < this.size; ++x) {
@@ -89,7 +89,7 @@
     };
 
     Raster.prototype.getGridIndex = function(clickPosition) {
-        var canvasSize = this.canvas.width;
+        var canvasSize = this.canvasWrapper.width;
         var rasterSpacing = canvasSize / (this.size + 1);
         var padding = rasterSpacing;
         var gridIndex = Math.round((clickPosition - padding) / rasterSpacing);
@@ -108,7 +108,7 @@
         return this.coordinates[this.getGridIndex(clickX)][this.getGridIndex(clickY)];
     };
 
-    function Canvas() {
+    function CanvasWrapper() {
         // TODO remove coupling: insert canvas to DOM programmatically
         this.canvas = document.getElementById(context.canvasId);
         this.height = this.canvas.height;
@@ -118,11 +118,11 @@
         this.canvas.addEventListener("click", this.onClick.bind(this));
     }
 
-    Canvas.prototype.draw = function() {
+    CanvasWrapper.prototype.draw = function() {
         this.raster.draw();
     };
 
-    Canvas.prototype.onClick = function(event) {
+    CanvasWrapper.prototype.onClick = function(event) {
         var node = this.raster.getCoordinate(event.layerX, event.layerY);
 
         if (!this.polyline) {
@@ -132,12 +132,8 @@
         this.polyline.addNode(node);
     };
 
-    Canvas.prototype.getCanvas = function() {
-        return document.getElementById(context.canvasId);
-    };
-
     function Polyline(parent) {
-        this.canvas = parent;
+        this.canvasWrapper = parent;
         this.nodes = new Array(3);
         this.nodeCount = 0;
     }
@@ -148,6 +144,14 @@
 
         alert(this.toString());
     };
+
+    Polyline.prototype.draw = function() {
+        var i;
+
+        for (i = 0; i < this.nodeCount; ++i) {
+            
+        }
+    }
 
     Polyline.prototype.toString = function() {
         var stringRepresentation = "Polyline(";
@@ -165,8 +169,8 @@
     };
 
     (function() {
-        var canvas = new Canvas();
+        var canvasWrapper = new CanvasWrapper();
 
-        canvas.draw();
+        canvasWrapper.draw();
     })();
 })();
