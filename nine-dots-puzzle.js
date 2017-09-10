@@ -5,8 +5,9 @@
     var context = {
         canvasId: "canvas-nine-dots-puzzle",
         dotColor: "blue",
-        dotColorChecked: "red",
-        dotRadius: 5
+        dotColorChecked: "green",
+        dotRadius: 5,
+        lineWidth: 3
     };
 
     function Coordinate(parent, x, y) {
@@ -24,14 +25,22 @@
         if (this.isDot) {
             canvasContext.fillStyle = context.dotColor;
             canvasContext.beginPath();
-            canvasContext.arc(this.getPosition(true), this.getPosition(false), context.dotRadius, 0, 2 * Math.PI);
+            canvasContext.arc(this.getPositionX(), this.getPositionY(), context.dotRadius, 0, 2 * Math.PI);
             canvasContext.fill();
             canvasContext.strokeStyle = context.dotColor;
             canvasContext.stroke();
         }
     };
 
-    Coordinate.prototype.getPosition = function(horizontal) {
+    Coordinate.prototype.getPositionX = function() {
+        return this._getPosition(false);
+    };
+
+    Coordinate.prototype.getPositionY = function() {
+        return this._getPosition(true);
+    };
+
+    Coordinate.prototype._getPosition = function(horizontal) {
         var canvas = this.raster.canvasWrapper.canvas;
         var canvasSize = canvas.width;
         var rasterSpacing = canvasSize / (this.raster.size + 1);
@@ -141,17 +150,32 @@
     Polyline.prototype.addNode = function(newNode) {
         this.nodes[this.nodeCount] = newNode;
         ++this.nodeCount;
-
-        alert(this.toString());
+        this.draw();
     };
 
-    Polyline.prototype.draw = function() {
-        var i;
+    Polyline.prototype.draw = function() {        
+        if (this.nodeCount > 0) {
+            var canvas = this.canvasWrapper.canvas;
+            var canvasContext = canvas.getContext("2d");
+            var i;
+             
+            canvasContext.strokeStyle = context.dotColorChecked;
+            canvasContext.lineWidth = context.lineWidth;
+            canvasContext.beginPath();
 
-        for (i = 0; i < this.nodeCount; ++i) {
-            
+            for (i = 0; i < this.nodeCount; ++i) {
+                var x = this.nodes[i].getPositionX();
+                var y = this.nodes[i].getPositionY();
+
+                if (i == 0) 
+                    canvasContext.moveTo(x, y);
+                else
+                    canvasContext.lineTo(x, y);
+            }
+
+            canvasContext.stroke();
         }
-    }
+    };
 
     Polyline.prototype.toString = function() {
         var stringRepresentation = "Polyline(";
