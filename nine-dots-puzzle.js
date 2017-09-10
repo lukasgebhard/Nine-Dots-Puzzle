@@ -5,7 +5,7 @@
     var context = {
         canvasId: "canvas-nine-dots-puzzle",
         dotColor: "blue",
-        dotColorChecked: "green",
+        colorChecked: "green",
         dotRadius: 5,
         lineWidth: 3
     };
@@ -23,21 +23,21 @@
         var canvasContext = canvas.getContext("2d");
 
         if (this.isDot) {
-            canvasContext.fillStyle = context.dotColor;
+            var color = this.checked ? context.colorChecked : context.dotColor;
+
+            canvasContext.fillStyle = color;
             canvasContext.beginPath();
             canvasContext.arc(this.getPositionX(), this.getPositionY(), context.dotRadius, 0, 2 * Math.PI);
             canvasContext.fill();
-            canvasContext.strokeStyle = context.dotColor;
-            canvasContext.stroke();
         }
     };
 
     Coordinate.prototype.getPositionX = function() {
-        return this._getPosition(false);
+        return this._getPosition(true);
     };
 
     Coordinate.prototype.getPositionY = function() {
-        return this._getPosition(true);
+        return this._getPosition(false);
     };
 
     Coordinate.prototype._getPosition = function(horizontal) {
@@ -46,7 +46,7 @@
         var rasterSpacing = canvasSize / (this.raster.size + 1);
         var padding = rasterSpacing;
 
-        return horizontal ? padding + this.y * rasterSpacing : padding + this.x * rasterSpacing;
+        return horizontal ? padding + this.x * rasterSpacing : padding + this.y * rasterSpacing;
     };
 
     function Raster(parent) {
@@ -117,6 +117,49 @@
         return this.coordinates[this.getGridIndex(clickX)][this.getGridIndex(clickY)];
     };
 
+    Raster.prototype._updateCheckState = function(startNode, targetNode) {       
+        if (startNode.x == targetNode.x) { // Vertical line
+            if (startNode.y > targetNode.y) {
+                var swap = targetNode;
+                targetNode = startNode;
+                startNode = swap;
+            }
+
+            var y;
+            var x = startNode.x;
+
+            for (y = startNode.y; y <= targetNode.y; ++y) {
+                this.coordinates[x][y].checked = true;
+            }
+        } else {
+            if (startNode.x > targetNode.x) {
+                var swap = targetNode;
+                targetNode = startNode;
+                startNode = swap;
+            }
+
+            var slope = (targetNode.y - startNode.y) / (targetNode.x - startNode.x);
+            var y = startNode.y;
+            var x;
+            var epsilon = 0.0001;
+
+            for (x = startNode.x; x <= targetNode.x; ++x) {
+                if (Math.abs(Math.floor(y) - y) < epsilon)
+                    this.coordinates[x][Math.floor(y)].checked = true;
+
+                y += slope;
+            }      
+        }      
+    }
+
+    Raster.prototype.updateCheckState = function(polyline) {
+        if (polyline.nodeCount == 1) {
+            this._updateCheckState(polyline.nodes[0], polyline.nodes[0]);
+        } else {
+            this._updateCheckState(polyline.nodes[polyline.nodeCount - 2], polyline.nodes[polyline.nodeCount - 1]);
+        }
+    };
+
     function CanvasWrapper() {
         // TODO remove coupling: insert canvas to DOM programmatically
         this.canvas = document.getElementById(context.canvasId);
@@ -129,6 +172,9 @@
 
     CanvasWrapper.prototype.draw = function() {
         this.raster.draw();
+
+        if (this.polyline)
+            this.polyline.draw();
     };
 
     CanvasWrapper.prototype.onClick = function(event) {
@@ -139,6 +185,8 @@
         }
 
         this.polyline.addNode(node);
+        this.raster.updateCheckState(this.polyline);
+        this.draw();
     };
 
     function Polyline(parent) {
@@ -150,7 +198,6 @@
     Polyline.prototype.addNode = function(newNode) {
         this.nodes[this.nodeCount] = newNode;
         ++this.nodeCount;
-        this.draw();
     };
 
     Polyline.prototype.draw = function() {        
@@ -159,7 +206,7 @@
             var canvasContext = canvas.getContext("2d");
             var i;
              
-            canvasContext.strokeStyle = context.dotColorChecked;
+            canvasContext.strokeStyle = context.colorChecked;
             canvasContext.lineWidth = context.lineWidth;
             canvasContext.beginPath();
 
