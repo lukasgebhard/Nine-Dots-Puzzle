@@ -7,7 +7,7 @@
     var context = {
         canvasId: "canvas-nine-dots-puzzle",
         dotColorNeutral: "blue",
-        dotColorChecked: "green",
+        dotColorSuccess: "green",
         dotColorFail: "red",
         dotRadius: 5,
         lineColor: "green",
@@ -22,17 +22,54 @@
         this.isDot = false;
     }
 
-    Coordinate.prototype.draw = function() {
+    Coordinate.prototype._blinkInterval = 500; // ms
+    Coordinate.prototype._blinkDuration = 2500; // ms
+
+    Coordinate.prototype._draw = function(x, y, color) {
         var canvas = this.raster.canvasWrapper.canvas;
         var canvasContext = canvas.getContext("2d");
 
-        if (this.isDot) {
-            var color = this.covered ? context.dotColorChecked : context.dotColorNeutral;
+        canvasContext.fillStyle = color;
+        canvasContext.strokeStyle = color;
+        canvasContext.lineWidth = 1;
+        canvasContext.beginPath();
+        canvasContext.arc(x, y, context.dotRadius, 0, 2 * Math.PI);
+        canvasContext.fill();
+        canvasContext.stroke();
+    };
 
-            canvasContext.fillStyle = color;
-            canvasContext.beginPath();
-            canvasContext.arc(this.getPositionX(), this.getPositionY(), context.dotRadius, 0, 2 * Math.PI);
-            canvasContext.fill();
+    Coordinate.prototype.blink = function() {
+        var intervalId = this._blink();
+
+        setTimeout(function() {
+            this._stopAnimation(intervalId);
+        }.bind(this), Coordinate.prototype._blinkDuration);
+    };
+
+    Coordinate.prototype._stopAnimation = function(id) {
+        clearInterval(id);
+    };
+
+    Coordinate.prototype._blink = function() {
+        if (!this._color) {
+            this._color = context.dotColorNeutral;
+        }
+
+        return setInterval(function() {
+            this._color = this._color === context.dotColorFail ? context.dotColorNeutral : context.dotColorFail;
+            this._draw(this.getPositionX(), this.getPositionY(), this._color);
+        }.bind(this), Coordinate.prototype._blinkInterval);
+    };
+
+    Coordinate.prototype._expand = function() {
+
+    };
+
+    Coordinate.prototype.draw = function() {
+        if (this.isDot) {
+            var color = this.covered ? context.dotColorSuccess : context.dotColorNeutral;
+
+            this._draw(this.getPositionX(), this.getPositionY(), color);
         }
     };
 
@@ -175,6 +212,7 @@
         this.height = this.canvas.height;
         this.width = this.canvas.width;
         this.raster = new Raster(this);
+        this.hasGameEnded = false;
 
         this.canvas.addEventListener("click", this.onClick.bind(this));
     }
@@ -186,24 +224,48 @@
             this.polyline.draw();
     };
 
-    CanvasWrapper.prototype.onClick = function(event) {
-        var node = this.raster.getCoordinate(event.layerX, event.layerY);
-
-        if (!this.polyline) {
-            this.polyline = new Polyline(this);
-        }
-
-        this.polyline.addNode(node);
-        this.raster.updateCheckState(this.polyline);
-        this.draw();
-
-        if (this.polyline.isComplete()) {
-            if (this.raster.covered()) {
-                alert("congrats");
-            } else {
-                alert("fail");
+    CanvasWrapper.prototype.showFailure = function() {
+        this.raster.getDots().forEach(function(dot) {
+            if (!dot.covered) {
+                dot.blink();
             }
+        })
+    };
+
+    CanvasWrapper.prototype.showSuccess = function() {
+        
+    };
+
+    CanvasWrapper.prototype.onClick = function(event) {
+        if (this.hasGameEnded) {
+            //TODO
+        } else {
+            var node = this.raster.getCoordinate(event.layerX, event.layerY);
+
+            if (!this.polyline) {
+                this.polyline = new Polyline(this);
+                this.canvas.addEventListener("mousemove", this.onMouseMove.bind(this));
+            }
+
+            this.polyline.addNode(node);
+            this.raster.updateCheckState(this.polyline);
+            this.draw();
+
+            if (this.polyline.isComplete()) {
+                this.hasGameEnded = true;
+                this.canvas.removeEventListener("click", this.onClick);
+
+                if (this.raster.covered()) {
+                    this.showSuccess();
+                } else {
+                    this.showFailure();
+                }
+            }  
         }
+    };
+
+    CanvasWrapper.prototype.onMouseMove = function(event) {
+        
     };
 
     function Polyline(parent) {
@@ -232,6 +294,7 @@
              
             canvasContext.strokeStyle = context.lineColor;
             canvasContext.lineWidth = context.lineWidth;
+            canvasContext.lineCap = "round";
             canvasContext.beginPath();
 
             for (i = 0; i < this.nodeCount; ++i) {
