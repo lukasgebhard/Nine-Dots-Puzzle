@@ -1,12 +1,16 @@
 (function() {
     "use strict";
 
+    // TODO cursor icon
+
     // TODO to stylesheet
     var context = {
         canvasId: "canvas-nine-dots-puzzle",
-        dotColor: "blue",
-        colorChecked: "green",
+        dotColorNeutral: "blue",
+        dotColorChecked: "green",
+        dotColorFail: "red",
         dotRadius: 5,
+        lineColor: "green",
         lineWidth: 3
     };
 
@@ -14,7 +18,7 @@
         this.raster = parent;
         this.x = x;
         this.y = y;
-        this.checked = false;
+        this.covered = false;
         this.isDot = false;
     }
 
@@ -23,7 +27,7 @@
         var canvasContext = canvas.getContext("2d");
 
         if (this.isDot) {
-            var color = this.checked ? context.colorChecked : context.dotColor;
+            var color = this.covered ? context.dotColorChecked : context.dotColorNeutral;
 
             canvasContext.fillStyle = color;
             canvasContext.beginPath();
@@ -129,7 +133,7 @@
             var x = startNode.x;
 
             for (y = startNode.y; y <= targetNode.y; ++y) {
-                this.coordinates[x][y].checked = true;
+                this.coordinates[x][y].covered = true;
             }
         } else {
             if (startNode.x > targetNode.x) {
@@ -145,12 +149,12 @@
 
             for (x = startNode.x; x <= targetNode.x; ++x) {
                 if (Math.abs(Math.floor(y) - y) < epsilon)
-                    this.coordinates[x][Math.floor(y)].checked = true;
+                    this.coordinates[x][Math.floor(y)].covered = true;
 
                 y += slope;
             }      
         }      
-    }
+    };
 
     Raster.prototype.updateCheckState = function(polyline) {
         if (polyline.nodeCount == 1) {
@@ -158,6 +162,10 @@
         } else {
             this._updateCheckState(polyline.nodes[polyline.nodeCount - 2], polyline.nodes[polyline.nodeCount - 1]);
         }
+    };
+
+    Raster.prototype.covered = function() {
+        return this.getDots().every(dot => dot.covered);
     };
 
     function CanvasWrapper() {
@@ -187,15 +195,30 @@
         this.polyline.addNode(node);
         this.raster.updateCheckState(this.polyline);
         this.draw();
+
+        if (this.polyline.isComplete()) {
+            if (this.raster.covered()) {
+                alert("congrats");
+            } else {
+                alert("fail");
+            }
+        }
     };
 
     function Polyline(parent) {
         this.canvasWrapper = parent;
-        this.nodes = new Array(3);
+        this.nodes = new Array(this.maxNodeCount);
         this.nodeCount = 0;
     }
 
+    Polyline.prototype.maxNodeCount = 5;
+
+    Polyline.prototype.isComplete = function() {
+        return this.nodeCount == Polyline.prototype.maxNodeCount;
+    };
+
     Polyline.prototype.addNode = function(newNode) {
+        console.assert(this.nodeCount < this.maxNodeCount, "Illegal state: Maximum number of polyline nodes exceeded.");
         this.nodes[this.nodeCount] = newNode;
         ++this.nodeCount;
     };
@@ -206,7 +229,7 @@
             var canvasContext = canvas.getContext("2d");
             var i;
              
-            canvasContext.strokeStyle = context.colorChecked;
+            canvasContext.strokeStyle = context.lineColor;
             canvasContext.lineWidth = context.lineWidth;
             canvasContext.beginPath();
 
