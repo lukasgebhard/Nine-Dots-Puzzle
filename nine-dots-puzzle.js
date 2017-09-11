@@ -47,7 +47,7 @@
     Coordinate.prototype._getPosition = function(horizontal) {
         var canvas = this.raster.canvasWrapper.canvas;
         var canvasSize = canvas.width;
-        var rasterSpacing = canvasSize / (this.raster.size + 1);
+        var rasterSpacing = canvasSize / (Raster.prototype.size + 1);
         var padding = rasterSpacing;
 
         return horizontal ? padding + this.x * rasterSpacing : padding + this.y * rasterSpacing;
@@ -56,12 +56,12 @@
     function Raster(parent) {
         var x, y, dot;
         this.canvasWrapper = parent;
-        this.coordinates = new Array(this.size);
+        this.coordinates = new Array(Raster.prototype.size);
 
-        for (x = 0; x < this.size; ++x) {
-            this.coordinates[x] = new Array(this.size);
+        for (x = 0; x < Raster.prototype.size; ++x) {
+            this.coordinates[x] = new Array(Raster.prototype.size);
 
-            for (y = 0; y < this.size; ++y) {
+            for (y = 0; y < Raster.prototype.size; ++y) {
                 this.coordinates[x][y] = new Coordinate(this, x, y);
             }
         }
@@ -79,10 +79,11 @@
         var dots = new Array(dotCount);
         var d = 0, i, j;
         var indentation = 2;
+        var dotSpacing = Raster.prototype.dotSpacing;
 
         for (i = 0; i < 3; ++i) {
             for (j = 0; j < 3; ++j) {
-                dots[d] = this.coordinates[indentation + i * this.dotSpacing][indentation + j * this.dotSpacing];
+                dots[d] = this.coordinates[indentation + i * dotSpacing][indentation + j * dotSpacing];
                 ++d;
             }
         }
@@ -101,24 +102,24 @@
         }
     };
 
-    Raster.prototype.getGridIndex = function(clickPosition) {
+    Raster.prototype._getGridIndex = function(clickPosition) {
         var canvasSize = this.canvasWrapper.width;
-        var rasterSpacing = canvasSize / (this.size + 1);
+        var rasterSpacing = canvasSize / (Raster.prototype.size + 1);
         var padding = rasterSpacing;
         var gridIndex = Math.round((clickPosition - padding) / rasterSpacing);
 
         if (gridIndex < 0) {
             gridIndex = 0;
         }
-        if (gridIndex >= this.size) {
-            gridIndex = this.size - 1;
+        if (gridIndex >= Raster.prototype.size) {
+            gridIndex = Raster.prototype.size - 1;
         }
 
         return gridIndex;
     };
 
     Raster.prototype.getCoordinate = function(clickX, clickY) {
-        return this.coordinates[this.getGridIndex(clickX)][this.getGridIndex(clickY)];
+        return this.coordinates[this._getGridIndex(clickX)][this._getGridIndex(clickY)];
     };
 
     Raster.prototype._updateCheckState = function(startNode, targetNode) {       
