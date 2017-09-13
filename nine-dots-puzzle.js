@@ -49,10 +49,10 @@
     }
 
     Coordinate.prototype.blink = function() {
-        var intervalId = this._blink();
+        this.animationId = this._blink();
 
         setTimeout(function() {
-            cancelInterval(this.animationId);
+            clearInterval(this.animationId);
         }.bind(this), Coordinate.prototype.animationDuration);
     };
 
