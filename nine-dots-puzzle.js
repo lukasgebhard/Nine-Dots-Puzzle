@@ -22,6 +22,7 @@
         this.isDot = false;
         this.radius = context.dotRadius;
         this.colour = context.colourNeutral;
+        this.animationId = - 1;
     }
 
     Coordinate.prototype._blinkInterval = 300; // ms
@@ -51,12 +52,8 @@
         var intervalId = this._blink();
 
         setTimeout(function() {
-            this._stopAnimation(intervalId);
+            cancelInterval(this.animationId);
         }.bind(this), Coordinate.prototype.animationDuration);
-    };
-
-    Coordinate.prototype._stopAnimation = function(id) {
-        clearInterval(id);
     };
 
     Coordinate.prototype._blink = function() {
@@ -67,18 +64,30 @@
     };
 
     Coordinate.prototype.expand = function() {
-        var animationId = requestAnimationFrame(function() {
+        this.animationId = requestAnimationFrame(function() {
             this._expand();
         }.bind(this));
 
         setTimeout(function() {
-            this._stopAnimation(intervalId);
+            cancelAnimationFrame(this.animationId);
         }.bind(this), Coordinate.prototype.animationDuration);
     }
 
     Coordinate.prototype._expand = function() {
-        this.radius *= 1.1;
+        if (!this._scalingFactor) {
+            var rStart = this.radius;
+            var rTarget = Math.min(this.raster.canvasWrapper.height, this.raster.canvasWrapper.width) / 2;
+            var exponent = (this.animationDuration / 1000) * 60 // 60 frames per second
+            
+            this._scalingFactor = Math.pow(rTarget / rStart, 1 / exponent);
+        }
+
+        this.radius *= this._scalingFactor;
         this.draw();
+
+        this.animationId = requestAnimationFrame(function() {
+            this._expand();
+        }.bind(this));
     };
 
     Coordinate.prototype.getPositionX = function() {
@@ -307,6 +316,10 @@
     };
 
     CanvasWrapper.prototype.showSuccess = function() {
+        this.raster.getDots().forEach(function(dot) {
+            dot.expand();
+        })
+
         setTimeout(function() {
             this.drawFace(true);
         }.bind(this), Coordinate.prototype.animationDuration);
