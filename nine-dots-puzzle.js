@@ -228,45 +228,59 @@
             this.polyline.draw();
     };
 
-    CanvasWrapper.prototype.drawHappyFace = function() {
+    CanvasWrapper.prototype.drawFace = function(happy) {
         var canvasContext = this.canvas.getContext("2d");
-        var centre = Math.floor(Math.min(this.width, this.height) / 2);
-        var outerRadius = Math.floor(centre * 0.8);
-        var innerRadius = Math.floor(centre * 0.5);
-        var eyeRadius = Math.floor(centre * 0.05);
-        var deltaXEyes = Math.floor(centre * 0.25);
-        var deltaYEyes = Math.floor(centre * 0.3);
+        var centre = Math.min(this.width, this.height) / 2;
+        var headRadius = centre * 0.8;
+        var eyeRadius = centre * 0.05;
+        var eyesOffsetX = centre * 0.25;
+        var eyesOffsetY = centre * 0.3;
 
         canvasContext.strokeStyle = 'black';
         canvasContext.lineWidth = 3;
 
         // Background
-        canvasContext.fillStyle = context.colourSuccess
+        canvasContext.fillStyle = happy ? context.colourSuccess : context.colourFail;
         canvasContext.fillRect(0, 0, this.width, this.height);
 
         // Head
         canvasContext.fillStyle = 'yellow';
         canvasContext.beginPath();
-        canvasContext.arc(centre, centre, outerRadius, 0, Math.PI * 2, true); 
+        canvasContext.arc(centre, centre, headRadius, 0, Math.PI * 2, true); 
         canvasContext.fill();
         canvasContext.stroke();
 
         // Mouth
-        canvasContext.fillStyle = 'white';
-        canvasContext.beginPath();
-        canvasContext.arc(centre, centre, innerRadius, 0, Math.PI, false);
-        canvasContext.lineTo(centre + innerRadius, centre);
-        canvasContext.fill();
-        canvasContext.stroke();
+        if (happy) {
+            var mouthRadius = centre * 0.5;
+            
+            canvasContext.fillStyle = 'white';
+            canvasContext.beginPath();
+            canvasContext.arc(centre, centre, mouthRadius, 0, Math.PI, false);
+            canvasContext.lineTo(centre + mouthRadius, centre);
+            canvasContext.fill();
+            canvasContext.stroke();
+        } else {
+            var leftCornerOfMouthX = centre - headRadius * 0.6;
+            var leftCornerOfMouthY = centre + headRadius * 0.1;
+            var rightCornerOfMouthX = centre + headRadius * 0.55;
+            var rightCornerOfMouthY = centre + headRadius * 0.4;
+
+            canvasContext.lineWidth = 4;
+            canvasContext.beginPath();
+            canvasContext.moveTo(leftCornerOfMouthX, leftCornerOfMouthY);
+            canvasContext.lineTo(rightCornerOfMouthX, rightCornerOfMouthY);
+            canvasContext.stroke();
+        }
 
         // Eyes
         canvasContext.fillStyle = 'black';
         canvasContext.beginPath();
-        canvasContext.arc(centre - deltaXEyes, centre - deltaYEyes, eyeRadius, 0, Math.PI * 2, true);
+        canvasContext.arc(centre - eyesOffsetX, centre - eyesOffsetY, eyeRadius, 0, Math.PI * 2, true);
         canvasContext.fill();
         canvasContext.stroke();
         canvasContext.beginPath();
-        canvasContext.arc(centre + deltaXEyes, centre - deltaYEyes, eyeRadius, 0, Math.PI * 2, true);
+        canvasContext.arc(centre + eyesOffsetX, centre - eyesOffsetY, eyeRadius, 0, Math.PI * 2, true);
         canvasContext.fill();
         canvasContext.stroke();
     }
@@ -277,11 +291,15 @@
                 dot.blink();
             }
         })
+
+        setTimeout(function() {
+            this.drawFace(false);
+        }.bind(this), Coordinate.prototype.blinkDuration);
     };
 
     CanvasWrapper.prototype.showSuccess = function() {
         setTimeout(function() {
-            this.drawHappyFace();
+            this.drawFace(true);
         }.bind(this), Coordinate.prototype.blinkDuration);
     };
 
