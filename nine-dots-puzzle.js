@@ -20,30 +20,39 @@
         this.y = y;
         this.covered = false;
         this.isDot = false;
+        this.radius = context.dotRadius;
+        this.colour = context.colourNeutral;
     }
 
-    Coordinate.prototype._blinkInterval = 500; // ms
-    Coordinate.prototype.blinkDuration = 2500; // ms
+    Coordinate.prototype._blinkInterval = 300; // ms
+    Coordinate.prototype.animationDuration = 2400; // ms
 
-    Coordinate.prototype._draw = function(x, y, colour) {
-        var canvas = this.raster.canvasWrapper.canvas;
-        var canvasContext = canvas.getContext("2d");
+    Coordinate.prototype.draw = function() {
+        if (this.isDot) {
+            var canvas = this.raster.canvasWrapper.canvas;
+            var canvasContext = canvas.getContext("2d");
 
-        canvasContext.fillStyle = colour;
-        canvasContext.strokeStyle = colour;
-        canvasContext.lineWidth = 1;
-        canvasContext.beginPath();
-        canvasContext.arc(x, y, context.dotRadius, 0, 2 * Math.PI);
-        canvasContext.fill();
-        canvasContext.stroke();
+            canvasContext.fillStyle = this.colour;
+            canvasContext.strokeStyle = this.colour;
+            canvasContext.lineWidth = 1;
+            canvasContext.beginPath();
+            canvasContext.arc(this.getPositionX(), this.getPositionY(), this.radius, 0, 2 * Math.PI);
+            canvasContext.fill();
+            canvasContext.stroke();
+        }
     };
+
+    Coordinate.prototype.cover = function() {
+        this.covered = true;
+        this.colour = context.colourSuccess;
+    }
 
     Coordinate.prototype.blink = function() {
         var intervalId = this._blink();
 
         setTimeout(function() {
             this._stopAnimation(intervalId);
-        }.bind(this), Coordinate.prototype.blinkDuration);
+        }.bind(this), Coordinate.prototype.animationDuration);
     };
 
     Coordinate.prototype._stopAnimation = function(id) {
@@ -51,26 +60,25 @@
     };
 
     Coordinate.prototype._blink = function() {
-        if (!this._colour) {
-            this._colour = context.colourNeutral;
-        }
-
         return setInterval(function() {
-            this._colour = this._colour === context.colourFail ? context.colourNeutral : context.colourFail;
-            this._draw(this.getPositionX(), this.getPositionY(), this._colour);
+            this.colour = this.colour === context.colourFail ? context.colourNeutral : context.colourFail;
+            this.draw();
         }.bind(this), Coordinate.prototype._blinkInterval);
     };
 
+    Coordinate.prototype.expand = function() {
+        var animationId = requestAnimationFrame(function() {
+            this._expand();
+        }.bind(this));
+
+        setTimeout(function() {
+            this._stopAnimation(intervalId);
+        }.bind(this), Coordinate.prototype.animationDuration);
+    }
+
     Coordinate.prototype._expand = function() {
-
-    };
-
-    Coordinate.prototype.draw = function() {
-        if (this.isDot) {
-            var colour = this.covered ? context.colourSuccess : context.colourNeutral;
-
-            this._draw(this.getPositionX(), this.getPositionY(), colour);
-        }
+        this.radius *= 1.1;
+        this.draw();
     };
 
     Coordinate.prototype.getPositionX = function() {
@@ -163,7 +171,7 @@
         return this.coordinates[this._getGridIndex(clickX)][this._getGridIndex(clickY)];
     };
 
-    Raster.prototype._updateCheckState = function(startNode, targetNode) {       
+    Raster.prototype._updateCoveredState = function(startNode, targetNode) {       
         if (startNode.x == targetNode.x) { // Vertical line
             if (startNode.y > targetNode.y) {
                 var swap = targetNode;
@@ -175,7 +183,7 @@
             var x = startNode.x;
 
             for (y = startNode.y; y <= targetNode.y; ++y) {
-                this.coordinates[x][y].covered = true;
+                this.coordinates[x][y].cover();
             }
         } else {
             if (startNode.x > targetNode.x) {
@@ -190,19 +198,20 @@
             var epsilon = 0.0001;
 
             for (x = startNode.x; x <= targetNode.x; ++x) {
-                if (Math.abs(Math.floor(y) - y) < epsilon)
-                    this.coordinates[x][Math.floor(y)].covered = true;
+                if (Math.abs(Math.floor(y) - y) < epsilon) {
+                    this.coordinates[x][Math.floor(y)].cover();
+                }
 
                 y += slope;
             }      
         }      
     };
 
-    Raster.prototype.updateCheckState = function(polyline) {
+    Raster.prototype.updateCoveredState = function(polyline) {
         if (polyline.nodeCount == 1) {
-            this._updateCheckState(polyline.nodes[0], polyline.nodes[0]);
+            this._updateCoveredState(polyline.nodes[0], polyline.nodes[0]);
         } else {
-            this._updateCheckState(polyline.nodes[polyline.nodeCount - 2], polyline.nodes[polyline.nodeCount - 1]);
+            this._updateCoveredState(polyline.nodes[polyline.nodeCount - 2], polyline.nodes[polyline.nodeCount - 1]);
         }
     };
 
@@ -294,13 +303,13 @@
 
         setTimeout(function() {
             this.drawFace(false);
-        }.bind(this), Coordinate.prototype.blinkDuration);
+        }.bind(this), Coordinate.prototype.animationDuration);
     };
 
     CanvasWrapper.prototype.showSuccess = function() {
         setTimeout(function() {
             this.drawFace(true);
-        }.bind(this), Coordinate.prototype.blinkDuration);
+        }.bind(this), Coordinate.prototype.animationDuration);
     };
 
     CanvasWrapper.prototype.onClick = function(event) {
@@ -315,7 +324,7 @@
             }
 
             this.polyline.addNode(node);
-            this.raster.updateCheckState(this.polyline);
+            this.raster.updateCoveredState(this.polyline);
             this.draw();
 
             if (this.polyline.isComplete()) {
