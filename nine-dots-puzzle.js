@@ -6,9 +6,9 @@
     // TODO to stylesheet
     var context = {
         canvasId: "canvas-nine-dots-puzzle",
-        dotColorNeutral: "blue",
-        dotColorSuccess: "green",
-        dotColorFail: "red",
+        colourNeutral: "blue",
+        colourSuccess: "green",
+        colourFail: "red",
         dotRadius: 5,
         lineColor: "green",
         lineWidth: 3
@@ -23,14 +23,14 @@
     }
 
     Coordinate.prototype._blinkInterval = 500; // ms
-    Coordinate.prototype._blinkDuration = 2500; // ms
+    Coordinate.prototype.blinkDuration = 2500; // ms
 
-    Coordinate.prototype._draw = function(x, y, color) {
+    Coordinate.prototype._draw = function(x, y, colour) {
         var canvas = this.raster.canvasWrapper.canvas;
         var canvasContext = canvas.getContext("2d");
 
-        canvasContext.fillStyle = color;
-        canvasContext.strokeStyle = color;
+        canvasContext.fillStyle = colour;
+        canvasContext.strokeStyle = colour;
         canvasContext.lineWidth = 1;
         canvasContext.beginPath();
         canvasContext.arc(x, y, context.dotRadius, 0, 2 * Math.PI);
@@ -43,7 +43,7 @@
 
         setTimeout(function() {
             this._stopAnimation(intervalId);
-        }.bind(this), Coordinate.prototype._blinkDuration);
+        }.bind(this), Coordinate.prototype.blinkDuration);
     };
 
     Coordinate.prototype._stopAnimation = function(id) {
@@ -51,13 +51,13 @@
     };
 
     Coordinate.prototype._blink = function() {
-        if (!this._color) {
-            this._color = context.dotColorNeutral;
+        if (!this._colour) {
+            this._colour = context.colourNeutral;
         }
 
         return setInterval(function() {
-            this._color = this._color === context.dotColorFail ? context.dotColorNeutral : context.dotColorFail;
-            this._draw(this.getPositionX(), this.getPositionY(), this._color);
+            this._colour = this._colour === context.colourFail ? context.colourNeutral : context.colourFail;
+            this._draw(this.getPositionX(), this.getPositionY(), this._colour);
         }.bind(this), Coordinate.prototype._blinkInterval);
     };
 
@@ -67,9 +67,9 @@
 
     Coordinate.prototype.draw = function() {
         if (this.isDot) {
-            var color = this.covered ? context.dotColorSuccess : context.dotColorNeutral;
+            var colour = this.covered ? context.colourSuccess : context.colourNeutral;
 
-            this._draw(this.getPositionX(), this.getPositionY(), color);
+            this._draw(this.getPositionX(), this.getPositionY(), colour);
         }
     };
 
@@ -89,6 +89,10 @@
 
         return horizontal ? padding + this.x * rasterSpacing : padding + this.y * rasterSpacing;
     };
+
+    Coordinate.prototype.equals = function(other) {
+        return other && other.x === this.x && other.y === this.y;
+    }
 
     function Raster(parent) {
         var x, y, dot;
@@ -224,6 +228,49 @@
             this.polyline.draw();
     };
 
+    CanvasWrapper.prototype.drawHappyFace = function() {
+        var canvasContext = this.canvas.getContext("2d");
+        var centre = Math.floor(Math.min(this.width, this.height) / 2);
+        var outerRadius = Math.floor(centre * 0.8);
+        var innerRadius = Math.floor(centre * 0.5);
+        var eyeRadius = Math.floor(centre * 0.05);
+        var deltaXEyes = Math.floor(centre * 0.25);
+        var deltaYEyes = Math.floor(centre * 0.3);
+
+        canvasContext.strokeStyle = 'black';
+        canvasContext.lineWidth = 3;
+
+        // Background
+        canvasContext.fillStyle = context.colourSuccess
+        canvasContext.fillRect(0, 0, this.width, this.height);
+
+        // Head
+        canvasContext.fillStyle = 'yellow';
+        canvasContext.beginPath();
+        canvasContext.arc(centre, centre, outerRadius, 0, Math.PI * 2, true); 
+        canvasContext.fill();
+        canvasContext.stroke();
+
+        // Mouth
+        canvasContext.fillStyle = 'white';
+        canvasContext.beginPath();
+        canvasContext.arc(centre, centre, innerRadius, 0, Math.PI, false);
+        canvasContext.lineTo(centre + innerRadius, centre);
+        canvasContext.fill();
+        canvasContext.stroke();
+
+        // Eyes
+        canvasContext.fillStyle = 'black';
+        canvasContext.beginPath();
+        canvasContext.arc(centre - deltaXEyes, centre - deltaYEyes, eyeRadius, 0, Math.PI * 2, true);
+        canvasContext.fill();
+        canvasContext.stroke();
+        canvasContext.beginPath();
+        canvasContext.arc(centre + deltaXEyes, centre - deltaYEyes, eyeRadius, 0, Math.PI * 2, true);
+        canvasContext.fill();
+        canvasContext.stroke();
+    }
+
     CanvasWrapper.prototype.showFailure = function() {
         this.raster.getDots().forEach(function(dot) {
             if (!dot.covered) {
@@ -233,7 +280,9 @@
     };
 
     CanvasWrapper.prototype.showSuccess = function() {
-        
+        setTimeout(function() {
+            this.drawHappyFace();
+        }.bind(this), Coordinate.prototype.blinkDuration);
     };
 
     CanvasWrapper.prototype.onClick = function(event) {
@@ -282,8 +331,11 @@
 
     Polyline.prototype.addNode = function(newNode) {
         console.assert(this.nodeCount < this.maxNodeCount, "Illegal state: Maximum number of polyline nodes exceeded.");
-        this.nodes[this.nodeCount] = newNode;
-        ++this.nodeCount;
+
+        if (this.nodeCount === 0 || !this.nodes[this.nodeCount - 1].equals(newNode)) {
+            this.nodes[this.nodeCount] = newNode;    
+            ++this.nodeCount;
+        }     
     };
 
     Polyline.prototype.draw = function() {        
