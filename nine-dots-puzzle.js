@@ -6,6 +6,7 @@
     // TODO to stylesheet
     var context = {
         canvasId: "canvas-nine-dots-puzzle",
+        colourBackround: 'white',
         colourNeutral: "blue",
         colourSuccess: "green",
         colourFail: "red",
@@ -78,7 +79,7 @@
             var rStart = this.radius;
             var rTarget = Math.min(this.raster.canvasWrapper.height, this.raster.canvasWrapper.width) / 2;
             var exponent = (this.animationDuration / 1000) * 60 // 60 frames per second
-            
+
             this._scalingFactor = Math.pow(rTarget / rStart, 1 / exponent);
         }
 
@@ -233,13 +234,15 @@
         this.canvas = document.getElementById(context.canvasId);
         this.height = this.canvas.height;
         this.width = this.canvas.width;
-        this.raster = new Raster(this);
-        this.hasGameEnded = false;
-
         this.canvas.addEventListener("click", this.onClick.bind(this));
     }
 
     CanvasWrapper.prototype.draw = function() {
+        var canvasContext = this.canvas.getContext("2d");
+
+        canvasContext.fillStyle = context.colourBackround;
+        canvasContext.fillRect(0, 0, this.width, this.height);
+
         this.raster.draw();
 
         if (this.polyline)
@@ -303,36 +306,41 @@
         canvasContext.stroke();
     }
 
-    CanvasWrapper.prototype.showFailure = function() {
-        this.raster.getDots().forEach(function(dot) {
-            if (!dot.covered) {
-                dot.blink();
-            }
-        })
+    CanvasWrapper.prototype.showResult = function(puzzleSolved) {
+        if (puzzleSolved) {
+            this.raster.getDots().forEach(function(dot) {
+                dot.expand();
+            })
+        } else {
+            this.raster.getDots().forEach(function(dot) {
+                if (!dot.covered) {
+                    dot.blink();
+                }
+            })
+        }
 
         setTimeout(function() {
-            this.drawFace(false);
+            this.drawFace(puzzleSolved);
+            this.faceDisplayed = true;
         }.bind(this), Coordinate.prototype.animationDuration);
     };
 
-    CanvasWrapper.prototype.showSuccess = function() {
-        this.raster.getDots().forEach(function(dot) {
-            dot.expand();
-        })
-
-        setTimeout(function() {
-            this.drawFace(true);
-        }.bind(this), Coordinate.prototype.animationDuration);
+    CanvasWrapper.prototype.startGame = function() {
+        this.raster = new Raster(this);
+        this.polyline = new Polyline(this);
+        this.hasGameEnded = false;
+        this.faceDisplayed = false;
+        this.draw();
     };
 
     CanvasWrapper.prototype.onClick = function(event) {
         if (this.hasGameEnded) {
-            //TODO
+            if (this.faceDisplayed)
+                this.startGame();
         } else {
             var node = this.raster.getCoordinate(event.layerX, event.layerY);
 
-            if (!this.polyline) {
-                this.polyline = new Polyline(this);
+            if (this.polyline.nodeCount === 0) {
                 this.canvas.addEventListener("mousemove", this.onMouseMove.bind(this));
             }
 
@@ -342,19 +350,13 @@
 
             if (this.polyline.isComplete()) {
                 this.hasGameEnded = true;
-                this.canvas.removeEventListener("click", this.onClick);
-
-                if (this.raster.covered()) {
-                    this.showSuccess();
-                } else {
-                    this.showFailure();
-                }
+                this.showResult(this.raster.covered());
             }  
         }
     };
 
     CanvasWrapper.prototype.onMouseMove = function(event) {
-        
+        // TODO
     };
 
     function Polyline(parent) {
@@ -419,8 +421,6 @@
     };
 
     (function() {
-        var canvasWrapper = new CanvasWrapper();
-
-        canvasWrapper.draw();
+        (new CanvasWrapper()).startGame();
     })();
 })();
