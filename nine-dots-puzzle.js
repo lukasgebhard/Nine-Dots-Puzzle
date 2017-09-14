@@ -42,9 +42,9 @@
         }
     };
 
-    Coordinate.prototype.cover = function() {
-        this.covered = true;
-        this.colour = context.colourSuccess;
+    Coordinate.prototype.updateState = function(covered) {
+        this.covered = covered;
+        this.colour = this.covered ? context.colourSuccess : context.colourNeutral;
     }
 
     Coordinate.prototype.blink = function() {
@@ -70,7 +70,7 @@
         setTimeout(function() {
             cancelAnimationFrame(this.animationId);
         }.bind(this), Coordinate.prototype.animationDuration);
-    }
+    };
 
     Coordinate.prototype._expand = function() {
         if (!this._scalingFactor) {
@@ -108,7 +108,7 @@
 
     Coordinate.prototype.equals = function(other) {
         return other && other.x === this.x && other.y === this.y;
-    }
+    };
 
     function Raster(parent) {
         var x, y, dot;
@@ -179,7 +179,7 @@
         return this.coordinates[this._getGridIndex(clickX)][this._getGridIndex(clickY)];
     };
 
-    Raster.prototype._updateCoveredState = function(startNode, targetNode) {       
+    Raster.prototype._updateState = function(startNode, targetNode) {       
         if (startNode.x == targetNode.x) { // Vertical line
             if (startNode.y > targetNode.y) {
                 var swap = targetNode;
@@ -191,7 +191,7 @@
             var x = startNode.x;
 
             for (y = startNode.y; y <= targetNode.y; ++y) {
-                this.coordinates[x][y].cover();
+                this.coordinates[x][y].updateState(true);
             }
         } else {
             if (startNode.x > targetNode.x) {
@@ -207,7 +207,7 @@
 
             for (x = startNode.x; x <= targetNode.x; ++x) {
                 if (Math.abs(Math.floor(y) - y) < epsilon) {
-                    this.coordinates[x][Math.floor(y)].cover();
+                    this.coordinates[x][Math.floor(y)].updateState(true);
                 }
 
                 y += slope;
@@ -215,11 +215,19 @@
         }      
     };
 
-    Raster.prototype.updateCoveredState = function(polyline) {
-        if (polyline.nodeCount == 1) {
-            this._updateCoveredState(polyline.nodes[0], polyline.nodes[0]);
+    Raster.prototype.updateState = function(polyline) {
+        this.getDots().forEach(dot => dot.updateState(false));
+
+        if (polyline.nodeCount == 0) {
+            polyline.previewNode.updateState(true);
         } else {
-            this._updateCoveredState(polyline.nodes[polyline.nodeCount - 2], polyline.nodes[polyline.nodeCount - 1]);
+            var i;
+
+            for (i = 0; i < polyline.nodeCount - 1; ++i) {
+                this._updateState(polyline.nodes[i], polyline.nodes[i + 1]);
+            }
+
+            this._updateState(polyline.nodes[polyline.nodeCount - 1], polyline.previewNode);
         }
     };
 
@@ -234,7 +242,6 @@
         this.width = this.canvas.width;
         this.canvas.addEventListener("click", this.onClick.bind(this));
         this.canvas.addEventListener("mousemove", this.onMouseMove.bind(this));
-
         this.canvas.style.cursor = 'crosshair';
     }
 
@@ -305,7 +312,7 @@
         canvasContext.arc(centre + eyesOffsetX, centre - eyesOffsetY, eyeRadius, 0, Math.PI * 2, true);
         canvasContext.fill();
         canvasContext.stroke();
-    }
+    };
 
     CanvasWrapper.prototype.showResult = function(puzzleSolved) {
         if (puzzleSolved) {
@@ -342,7 +349,7 @@
             var node = this.raster.getCoordinate(event.layerX, event.layerY);
 
             this.polyline.addNode(node);
-            this.raster.updateCoveredState(this.polyline);
+            this.raster.updateState(this.polyline);
             this.draw();
 
             if (this.polyline.isComplete()) {
@@ -353,12 +360,12 @@
     };
 
     CanvasWrapper.prototype.onMouseMove = function(event) {  
-        var node = this.raster.getCoordinate(event.layerX, event.layerY);
-                         
-        if (this.polyline.nodeCount === 0) {
-            
-        } else {
-            
+        if (!this.hasGameEnded) {
+            var node = this.raster.getCoordinate(event.layerX, event.layerY);
+          
+            this.polyline.addNode(node, true);
+            this.raster.updateState(this.polyline);
+            this.draw();        
         }
     };
 
@@ -366,6 +373,7 @@
         this.canvasWrapper = parent;
         this.nodes = new Array(this.maxNodeCount);
         this.nodeCount = 0;
+        this.previewNode = null;
     }
 
     Polyline.prototype.maxNodeCount = 5;
@@ -374,13 +382,17 @@
         return this.nodeCount == Polyline.prototype.maxNodeCount;
     };
 
-    Polyline.prototype.addNode = function(newNode) {
+    Polyline.prototype.addNode = function(newNode, isPreviewNode) {
         console.assert(this.nodeCount < this.maxNodeCount, "Illegal state: Maximum number of polyline nodes exceeded.");
 
         if (this.nodeCount === 0 || !this.nodes[this.nodeCount - 1].equals(newNode)) {
-            this.nodes[this.nodeCount] = newNode;    
-            ++this.nodeCount;
-        }     
+            if (isPreviewNode) {
+                this.previewNode = newNode;
+            } else {
+                this.nodes[this.nodeCount] = newNode;    
+                ++this.nodeCount;
+            }
+        }
     };
 
     Polyline.prototype.draw = function() {        
