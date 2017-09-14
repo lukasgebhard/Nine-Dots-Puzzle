@@ -1,8 +1,6 @@
 (function() {
     "use strict";
 
-    // TODO cursor icon
-
     // TODO to stylesheet
     var context = {
         canvasId: "canvas-nine-dots-puzzle",
@@ -235,6 +233,9 @@
         this.height = this.canvas.height;
         this.width = this.canvas.width;
         this.canvas.addEventListener("click", this.onClick.bind(this));
+        this.canvas.addEventListener("mousemove", this.onMouseMove.bind(this));
+
+        this.canvas.style.cursor = 'crosshair';
     }
 
     CanvasWrapper.prototype.draw = function() {
@@ -340,10 +341,6 @@
         } else {
             var node = this.raster.getCoordinate(event.layerX, event.layerY);
 
-            if (this.polyline.nodeCount === 0) {
-                this.canvas.addEventListener("mousemove", this.onMouseMove.bind(this));
-            }
-
             this.polyline.addNode(node);
             this.raster.updateCoveredState(this.polyline);
             this.draw();
@@ -355,8 +352,14 @@
         }
     };
 
-    CanvasWrapper.prototype.onMouseMove = function(event) {
-        // TODO
+    CanvasWrapper.prototype.onMouseMove = function(event) {  
+        var node = this.raster.getCoordinate(event.layerX, event.layerY);
+                         
+        if (this.polyline.nodeCount === 0) {
+            
+        } else {
+            
+        }
     };
 
     function Polyline(parent) {
