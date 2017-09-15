@@ -388,18 +388,12 @@
     Polyline.prototype.addNode = function(newNode, isPreviewNode) {
         console.assert(this.nodeCount < this.maxNodeCount, "Illegal state: Maximum number of polyline nodes exceeded.");
 
-        if (this.nodeCount === 0 || !this.nodes[this.nodeCount - 1].equals(newNode)) {
-            if (isPreviewNode) {
-                this.previewNode = newNode;
-            } else {
-                this.nodes[this.nodeCount] = newNode;    
-                ++this.nodeCount;
-            }
-        }
+        this.previewNode = newNode;
 
-        // When hovering the node that was added most recently, remove the preview line
-        if (isPreviewNode && this.nodeCount > 0 && this.nodes[this.nodeCount - 1].equals(newNode)) {
-            this.previewNode = newNode;
+        // A permanent (non-preview) node is only added if it is different from the previously added node.
+        if (!isPreviewNode && (this.nodeCount === 0 || !this.nodes[this.nodeCount - 1].equals(newNode))) {
+            this.nodes[this.nodeCount] = newNode;    
+            ++this.nodeCount;
         }
     };
 
