@@ -4,12 +4,12 @@
     // TODO to stylesheet
     var context = {
         canvasId: "canvas-nine-dots-puzzle",
-        colourBackround: 'white',
-        colourNeutral: "blue",
-        colourSuccess: "green",
-        colourFail: "red",
+        colourBackround: "rgb(153, 221, 255)",
+        colourNeutral: "rgb(0, 0, 128)",
+        colourSuccess: "rgb(0, 128, 0)",
+        colourFail: "rgb(230, 46, 0)",
+        colourFace: "rgb(255, 217, 26)",
         dotRadius: 5,
-        lineColor: "green",
         lineWidth: 3
     };
 
@@ -247,14 +247,17 @@
 
     CanvasWrapper.prototype.draw = function() {
         var canvasContext = this.canvas.getContext("2d");
+        var count = this.polyline.maxNodeCount - this.polyline.nodeCount;
 
         canvasContext.fillStyle = context.colourBackround;
         canvasContext.fillRect(0, 0, this.width, this.height);
+        canvasContext.font = '10px sans-serif'
+        canvasContext.strokeStyle = context.colourNeutral;
+        canvasContext.lineWidth = 1;
+        canvasContext.strokeText(count, this.width - 30, this.height - 30);
 
         this.raster.draw();
-
-        if (this.polyline)
-            this.polyline.draw();
+        this.polyline.draw();
     };
 
     CanvasWrapper.prototype.drawFace = function(happy) {
@@ -273,7 +276,7 @@
         canvasContext.fillRect(0, 0, this.width, this.height);
 
         // Head
-        canvasContext.fillStyle = 'yellow';
+        canvasContext.fillStyle = context.colourFace;
         canvasContext.beginPath();
         canvasContext.arc(centre, centre, headRadius, 0, Math.PI * 2, true); 
         canvasContext.fill();
@@ -406,7 +409,7 @@
             var canvasContext = canvas.getContext("2d");
             var i;
              
-            canvasContext.strokeStyle = context.lineColor;
+            canvasContext.strokeStyle = context.colourSuccess;
             canvasContext.lineWidth = context.lineWidth;
             canvasContext.lineCap = "round";
             canvasContext.beginPath();
