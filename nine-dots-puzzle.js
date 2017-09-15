@@ -416,6 +416,7 @@
                     canvasContext.lineTo(x, y);
             }
 
+            canvasContext.lineTo(this.previewNode.getPositionX(), this.previewNode.getPositionY());
             canvasContext.stroke();
         }
     };
