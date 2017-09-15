@@ -10,7 +10,7 @@
         colourFail: "rgb(230, 46, 0)",
         colourFace: "rgb(255, 217, 26)",
         dotRadius: 5,
-        lineWidth: 3
+        lineWidth: 3,
     };
 
     function Coordinate(parent, x, y) {
@@ -247,18 +247,37 @@
 
     CanvasWrapper.prototype.draw = function() {
         var canvasContext = this.canvas.getContext("2d");
-        var count = this.polyline.maxNodeCount - this.polyline.nodeCount;
 
         canvasContext.fillStyle = context.colourBackround;
         canvasContext.fillRect(0, 0, this.width, this.height);
-        canvasContext.font = '10px sans-serif'
-        canvasContext.strokeStyle = context.colourNeutral;
-        canvasContext.lineWidth = 1;
-        canvasContext.strokeText(count, this.width - 30, this.height - 30);
 
         this.raster.draw();
         this.polyline.draw();
+        this.drawCounter();
     };
+
+    CanvasWrapper.prototype.drawCounter = function() {
+        var canvasContext = this.canvas.getContext("2d");
+        var count = this.polyline.maxNodeCount - this.polyline.nodeCount; 
+        var backgroundRadius = Math.min(this.width, this.height) / 5;  
+        var textPaddingX = backgroundRadius / 4;
+        var textPaddingY = backgroundRadius / 5;
+
+        canvasContext.font = '30px sans-serif'
+        canvasContext.strokeStyle = 'rgb(51, 51, 51)';
+        canvasContext.fillStyle = 'rgb(51, 51, 51)';
+        canvasContext.lineWidth = 1;
+
+        // Background
+        canvasContext.beginPath();
+        canvasContext.arc(0, this.height, backgroundRadius, 0, 2 * Math.PI, true);
+        canvasContext.fill();
+        canvasContext.stroke();
+
+        // Text
+        canvasContext.fillStyle = 'white';
+        canvasContext.fillText(count, textPaddingX, this.height - textPaddingY);
+    }
 
     CanvasWrapper.prototype.drawFace = function(happy) {
         var canvasContext = this.canvas.getContext("2d");
