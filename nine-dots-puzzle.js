@@ -393,6 +393,11 @@
                 ++this.nodeCount;
             }
         }
+
+        // When hovering the node that was added most recently, remove the preview line
+        if (isPreviewNode && this.nodeCount > 0 && this.nodes[this.nodeCount - 1].equals(newNode)) {
+            this.previewNode = newNode;
+        }
     };
 
     Polyline.prototype.draw = function() {        
