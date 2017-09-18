@@ -9,8 +9,14 @@
         colourSuccess: "rgb(0, 128, 0)",
         colourFail: "rgb(230, 46, 0)",
         colourFace: "rgb(255, 217, 26)",
+        colourText: "white",
+        colourTextBackgroundDark: 'rgb(51, 51, 51)',
+        colourTextBackgroundLight: 'rgb(115, 115, 115)',
         dotRadius: 5,
         lineWidth: 3,
+        showHintButton: true,
+        textButtonHint: 'Hint',
+        textHint: 'Think outside the box.'
     };
 
     function Coordinate(parent, x, y) {
@@ -240,9 +246,9 @@
         this.canvas = document.getElementById(context.canvasId);
         this.height = this.canvas.height;
         this.width = this.canvas.width;
+        this.hintButtonHeight = this.height * 0.1;
         this.canvas.addEventListener("click", this.onClick.bind(this));
         this.canvas.addEventListener("mousemove", this.onMouseMove.bind(this));
-        this.canvas.style.cursor = 'crosshair';
     }
 
     CanvasWrapper.prototype.draw = function() {
@@ -262,10 +268,11 @@
         var backgroundRadius = Math.min(this.width, this.height) / 5;  
         var textPaddingX = backgroundRadius / 4;
         var textPaddingY = backgroundRadius / 5;
+        var fontSize = backgroundRadius / 2;
 
-        canvasContext.font = '30px sans-serif'
-        canvasContext.strokeStyle = 'rgb(51, 51, 51)';
-        canvasContext.fillStyle = 'rgb(51, 51, 51)';
+        canvasContext.font = fontSize + 'px sans-serif'
+        canvasContext.strokeStyle = context.colourTextBackgroundDark;
+        canvasContext.fillStyle = context.colourTextBackgroundDark;
         canvasContext.lineWidth = 1;
 
         // Background
@@ -275,15 +282,50 @@
         canvasContext.stroke();
 
         // Text
-        canvasContext.fillStyle = 'white';
+        canvasContext.fillStyle = context.colourText;
         canvasContext.fillText(count, textPaddingX, this.height - textPaddingY);
     }
 
-    CanvasWrapper.prototype.drawFace = function(happy) {
+    CanvasWrapper.prototype.drawHintButton = function(showHint) {
+        var canvasContext = this.canvas.getContext("2d");
+        var count = this.polyline.maxNodeCount - this.polyline.nodeCount; 
+        var backgroundWidth = Math.min(this.width, this.height) * 0.2;  
+        var backgroundHeight = this.hintButtonHeight;
+        var backgroundY = this.height - backgroundHeight;
+        var backgroundPointerX = backgroundWidth + backgroundHeight / 2;
+        var backgroundPointerY = backgroundY + backgroundHeight / 2;
+        var fontSize = backgroundHeight * 0.7;
+        var textPadding = (backgroundHeight - fontSize) * 0.7;
+
+        canvasContext.font = fontSize + 'px sans-serif'
+        canvasContext.lineWidth = 1;
+
+        // Background
+        canvasContext.fillStyle = context.colourTextBackgroundDark;
+        canvasContext.fillRect(0, backgroundY, this.width, backgroundHeight);
+        canvasContext.fillStyle = context.colourTextBackgroundLight;      
+        canvasContext.beginPath();
+        canvasContext.moveTo(0, backgroundY);
+        canvasContext.lineTo(backgroundWidth, backgroundY);
+        canvasContext.lineTo(backgroundPointerX, backgroundPointerY);
+        canvasContext.lineTo(backgroundWidth, this.height);
+        canvasContext.lineTo(0, this.height);
+        canvasContext.fill();
+
+        // Text
+        canvasContext.fillStyle = 'white';
+        canvasContext.fillText(context.textButtonHint, textPadding, this.height - textPadding);
+
+        if (showHint) {
+            canvasContext.fillText(context.textHint, backgroundPointerX + textPadding, this.height - textPadding);         
+        }
+    }
+
+    CanvasWrapper.prototype.drawFace = function() {
         var canvasContext = this.canvas.getContext("2d");
         var centre = Math.min(this.width, this.height) / 2;
-        var headRadius = centre * 0.8;
-        var eyeRadius = centre * 0.05;
+        var headRadius = centre * 0.75;
+        var eyeRadius = centre * 0.04;
         var eyesOffsetX = centre * 0.25;
         var eyesOffsetY = centre * 0.3;
 
@@ -291,7 +333,7 @@
         canvasContext.lineWidth = 3;
 
         // Background
-        canvasContext.fillStyle = happy ? context.colourSuccess : context.colourFail;
+        canvasContext.fillStyle = this.puzzleSolved ? context.colourSuccess : context.colourFail;
         canvasContext.fillRect(0, 0, this.width, this.height);
 
         // Head
@@ -302,8 +344,8 @@
         canvasContext.stroke();
 
         // Mouth
-        if (happy) {
-            var mouthRadius = centre * 0.5;
+        if (this.puzzleSolved) {
+            var mouthRadius = centre * 0.45;
             
             canvasContext.fillStyle = 'white';
             canvasContext.beginPath();
@@ -336,8 +378,8 @@
         canvasContext.stroke();
     };
 
-    CanvasWrapper.prototype.showResult = function(puzzleSolved) {
-        if (puzzleSolved) {
+    CanvasWrapper.prototype.showResult = function() {
+        if (this.puzzleSolved) {
             this.raster.getDots().forEach(function(dot) {
                 dot.expand();
             })
@@ -350,7 +392,19 @@
         }
 
         setTimeout(function() {
-            this.drawFace(puzzleSolved);
+            if (this.puzzleSolved || !context.showHintButton) {
+                this.drawFace();
+            } else {
+                var canvasContext = this.canvas.getContext("2d");
+                
+                canvasContext.save();
+                canvasContext.translate(0, - this.hintButtonHeight / 2);
+                this.drawFace();
+                canvasContext.restore();
+                this.drawHintButton(false);
+            }
+            
+            this.canvas.style.cursor = 'default';
             this.faceDisplayed = true;
         }.bind(this), Coordinate.prototype.animationDuration);
     };
@@ -360,13 +414,20 @@
         this.polyline = new Polyline(this);
         this.hasGameEnded = false;
         this.faceDisplayed = false;
+        this.puzzleSolved = false;
+        this.canvas.style.cursor = 'crosshair';
         this.draw();
     };
 
     CanvasWrapper.prototype.onClick = function(event) {
         if (this.hasGameEnded) {
-            if (this.faceDisplayed)
-                this.startGame();
+            if (this.faceDisplayed) {
+                if (this.hintButtonSelected(event)) {
+                    this.drawHintButton(true); 
+                } else {
+                    this.startGame();
+                }
+            }
         } else {
             var node = this.raster.getCoordinate(event.layerX, event.layerY);
 
@@ -376,13 +437,23 @@
 
             if (this.polyline.isComplete()) {
                 this.hasGameEnded = true;
-                this.showResult(this.raster.covered());
+                this.puzzleSolved = this.raster.covered();
+                this.showResult();
             }  
         }
     };
 
+    CanvasWrapper.prototype.hintButtonSelected = function(event) {
+        return this.hasGameEnded && this.faceDisplayed && !this.puzzleSolved && context.showHintButton
+            && event.layerY > this.height - this.hintButtonHeight;
+    }
+
     CanvasWrapper.prototype.onMouseMove = function(event) {  
-        if (!this.hasGameEnded) {
+        if (this.hasGameEnded) {
+            if (this.faceDisplayed) {
+                this.canvas.style.cursor = this.hintButtonSelected(event) ? 'pointer' : 'default';
+            }
+        } else {
             var node = this.raster.getCoordinate(event.layerX, event.layerY);
           
             this.polyline.addNode(node, true);
