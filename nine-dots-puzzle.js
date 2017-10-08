@@ -4,6 +4,9 @@
     // TODO to stylesheet
     var context = {
         canvasId: "canvas-nine-dots-puzzle",
+        showHintButtonAfterRound: 2,
+        textButtonHint: 'Hint',
+        textHint: 'Think outside the box.',
         colourBackround: "rgb(153, 221, 255)",
         colourNeutral: "rgb(0, 0, 128)",
         colourSuccess: "rgb(0, 128, 0)",
@@ -12,11 +15,6 @@
         colourText: "white",
         colourTextBackgroundDark: 'rgb(51, 51, 51)',
         colourTextBackgroundLight: 'rgb(115, 115, 115)',
-        dotRadius: 5,
-        lineWidth: 3,
-        showHintButtonAfterRound: 2,
-        textButtonHint: 'Hint',
-        textHint: 'Think outside the box.'
     };
 
     function Coordinate(parent, x, y) {
@@ -25,7 +23,7 @@
         this.y = y;
         this.covered = false;
         this.isDot = false;
-        this.radius = context.dotRadius;
+        this.radius = Math.max(5, this.raster.canvasWrapper.size / 40);
         this.colour = context.colourNeutral;
         this.animationId = - 1;
     }
@@ -81,7 +79,7 @@
     Coordinate.prototype._expand = function() {
         if (!this._scalingFactor) {
             var rStart = this.radius;
-            var rTarget = Math.min(this.raster.canvasWrapper.height, this.raster.canvasWrapper.width) / 2;
+            var rTarget = this.raster.canvasWrapper.size / 2;
             var exponent = (this.animationDuration / 1000) * 60 // 60 frames per second
 
             this._scalingFactor = Math.pow(rTarget / rStart, 1 / exponent);
@@ -104,9 +102,7 @@
     };
 
     Coordinate.prototype._getPosition = function(horizontal) {
-        var canvas = this.raster.canvasWrapper.canvas;
-        var canvasSize = Math.min(canvas.width, canvas.height);
-        var rasterSpacing = canvasSize / (Raster.prototype.size + 1);
+        var rasterSpacing = this.raster.canvasWrapper.size / (Raster.prototype.size + 1);
         var padding = rasterSpacing;
 
         return horizontal ? padding + this.x * rasterSpacing : padding + this.y * rasterSpacing;
@@ -166,8 +162,7 @@
     };
 
     Raster.prototype._getGridIndex = function(clickPosition) {
-        var canvasSize = Math.min(this.canvasWrapper.width, this.canvasWrapper.height);
-        var rasterSpacing = canvasSize / (Raster.prototype.size + 1);
+        var rasterSpacing = this.canvasWrapper.size / (Raster.prototype.size + 1);
         var padding = rasterSpacing;
         var gridIndex = Math.round((clickPosition - padding) / rasterSpacing);
 
@@ -242,12 +237,12 @@
     };
 
     function CanvasWrapper() {
-        // TODO remove coupling: insert canvas to DOM programmatically
         this.canvas = document.getElementById(context.canvasId);
         this.height = this.canvas.height;
         this.width = this.canvas.width;
+        this.size = Math.min(this.height, this.width);
         this.hintButtonHeight = this.height * 0.1;
-        this.hintButtonWidth = Math.min(this.width, this.height) * 0.2;  
+        this.hintButtonWidth = this.size * 0.2;  
         this.hintReceived = false;
         this.currentRound = 0;
         this.canvas.addEventListener("click", this.onClick.bind(this));
@@ -268,7 +263,7 @@
     CanvasWrapper.prototype.drawCounter = function() {
         var canvasContext = this.canvas.getContext("2d");
         var count = this.polyline.maxNodeCount - this.polyline.nodeCount; 
-        var backgroundRadius = Math.min(this.width, this.height) / 5;  
+        var backgroundRadius = this.size / 5;  
         var textPaddingX = backgroundRadius / 4;
         var textPaddingY = backgroundRadius / 5;
         var fontSize = backgroundRadius / 2;
@@ -327,14 +322,14 @@
 
     CanvasWrapper.prototype.drawFace = function() {
         var canvasContext = this.canvas.getContext("2d");
-        var centre = Math.min(this.width, this.height) / 2;
+        var centre = this.size / 2;
         var headRadius = centre * 0.75;
         var eyeRadius = centre * 0.04;
         var eyesOffsetX = centre * 0.25;
         var eyesOffsetY = centre * 0.3;
 
         canvasContext.strokeStyle = 'black';
-        canvasContext.lineWidth = 3;
+        canvasContext.lineWidth = Math.max(3, this.size / 67);
 
         // Background
         canvasContext.fillStyle = this.puzzleSolved ? context.colourSuccess : context.colourFail;
@@ -363,7 +358,7 @@
             var rightCornerOfMouthX = centre + headRadius * 0.55;
             var rightCornerOfMouthY = centre + headRadius * 0.4;
 
-            canvasContext.lineWidth = 4;
+            canvasContext.lineWidth = Math.max(4, this.size / 50);
             canvasContext.beginPath();
             canvasContext.moveTo(leftCornerOfMouthX, leftCornerOfMouthY);
             canvasContext.lineTo(rightCornerOfMouthX, rightCornerOfMouthY);
@@ -484,6 +479,7 @@
         this.nodes = new Array(this.maxNodeCount);
         this.nodeCount = 0;
         this.previewNode = null;
+        this.lineWidth = Math.max(3, this.canvasWrapper.size / 67);
     }
 
     Polyline.prototype.maxNodeCount = 5;
@@ -511,7 +507,7 @@
             var i;
              
             canvasContext.strokeStyle = context.colourSuccess;
-            canvasContext.lineWidth = context.lineWidth;
+            canvasContext.lineWidth = this.lineWidth;
             canvasContext.lineCap = "round";
             canvasContext.beginPath();
 
