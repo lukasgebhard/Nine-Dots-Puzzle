@@ -14,7 +14,7 @@
         colourTextBackgroundLight: 'rgb(115, 115, 115)',
         dotRadius: 5,
         lineWidth: 3,
-        showHintButton: true,
+        showHintButtonAfterRound: 2,
         textButtonHint: 'Hint',
         textHint: 'Think outside the box.'
     };
@@ -247,6 +247,9 @@
         this.height = this.canvas.height;
         this.width = this.canvas.width;
         this.hintButtonHeight = this.height * 0.1;
+        this.hintButtonWidth = Math.min(this.width, this.height) * 0.2;  
+        this.hintReceived = false;
+        this.currentRound = 0;
         this.canvas.addEventListener("click", this.onClick.bind(this));
         this.canvas.addEventListener("mousemove", this.onMouseMove.bind(this));
     }
@@ -289,8 +292,9 @@
     CanvasWrapper.prototype.drawHintButton = function(showHint) {
         var canvasContext = this.canvas.getContext("2d");
         var count = this.polyline.maxNodeCount - this.polyline.nodeCount; 
-        var backgroundWidth = Math.min(this.width, this.height) * 0.2;  
+
         var backgroundHeight = this.hintButtonHeight;
+        var backgroundWidth = this.hintButtonWidth;
         var backgroundY = this.height - backgroundHeight;
         var backgroundPointerX = backgroundWidth + backgroundHeight / 2;
         var backgroundPointerY = backgroundY + backgroundHeight / 2;
@@ -301,7 +305,7 @@
         canvasContext.lineWidth = 1;
 
         // Background
-        canvasContext.fillStyle = context.colourTextBackgroundDark;
+        canvasContext.fillStyle = showHint ? context.colourTextBackgroundDark : context.colourFail;
         canvasContext.fillRect(0, backgroundY, this.width, backgroundHeight);
         canvasContext.fillStyle = context.colourTextBackgroundLight;      
         canvasContext.beginPath();
@@ -392,14 +396,16 @@
         }
 
         setTimeout(function() {
-            if (this.puzzleSolved || !context.showHintButton) {
-                this.drawFace();
-            } else {
-                var canvasContext = this.canvas.getContext("2d");
-                
+            var canvasContext = this.canvas.getContext("2d");
+
+            if (this.showHintButton()) {
                 canvasContext.save();
                 canvasContext.translate(0, - this.hintButtonHeight / 2);
-                this.drawFace();
+            }
+
+            this.drawFace();
+            
+            if (this.showHintButton()) {
                 canvasContext.restore();
                 this.drawHintButton(false);
             }
@@ -409,24 +415,34 @@
         }.bind(this), Coordinate.prototype.animationDuration);
     };
 
+    CanvasWrapper.prototype.showHintButton = function() {
+        return this.hasGameEnded && !this.puzzleSolved && !this.hintReceived
+            && this.currentRound >= context.showHintButtonAfterRound;
+    };
+
     CanvasWrapper.prototype.startGame = function() {
         this.raster = new Raster(this);
         this.polyline = new Polyline(this);
         this.hasGameEnded = false;
         this.faceDisplayed = false;
         this.puzzleSolved = false;
+        this.currentRound += 1;
         this.canvas.style.cursor = 'crosshair';
         this.draw();
     };
 
     CanvasWrapper.prototype.onClick = function(event) {
         if (this.hasGameEnded) {
-            if (this.faceDisplayed) {
-                if (this.hintButtonSelected(event)) {
-                    this.drawHintButton(true); 
-                } else {
-                    this.startGame();
+            if (this.hintButtonSelected(event)) {
+                this.drawHintButton(true); 
+                this.hintReceived = true;
+            } else if (this.faceDisplayed) {
+                if (this.puzzleSolved) {
+                    this.currentRound = 0;
+                    this.hintReceived = false;
                 }
+
+                this.startGame();
             }
         } else {
             var node = this.raster.getCoordinate(event.layerX, event.layerY);
@@ -444,8 +460,9 @@
     };
 
     CanvasWrapper.prototype.hintButtonSelected = function(event) {
-        return this.hasGameEnded && this.faceDisplayed && !this.puzzleSolved && context.showHintButton
-            && event.layerY > this.height - this.hintButtonHeight;
+        return this.faceDisplayed && this.showHintButton()
+            && event.layerY >= this.height - this.hintButtonHeight
+            && event.layerX <= this.hintButtonWidth;
     }
 
     CanvasWrapper.prototype.onMouseMove = function(event) {  
