@@ -105,7 +105,7 @@
 
     Coordinate.prototype._getPosition = function(horizontal) {
         var canvas = this.raster.canvasWrapper.canvas;
-        var canvasSize = canvas.width;
+        var canvasSize = Math.min(canvas.width, canvas.height);
         var rasterSpacing = canvasSize / (Raster.prototype.size + 1);
         var padding = rasterSpacing;
 
@@ -166,7 +166,7 @@
     };
 
     Raster.prototype._getGridIndex = function(clickPosition) {
-        var canvasSize = this.canvasWrapper.width;
+        var canvasSize = Math.min(this.canvasWrapper.width, this.canvasWrapper.height);
         var rasterSpacing = canvasSize / (Raster.prototype.size + 1);
         var padding = rasterSpacing;
         var gridIndex = Math.round((clickPosition - padding) / rasterSpacing);
