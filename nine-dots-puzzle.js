@@ -22,12 +22,13 @@
         this.y = y;
         this.covered = false;
         this.isDot = false;
-        this.radius = Math.max(5, this.raster.canvasWrapper.size / 40);
+        this.radius = Math.max(4, this.raster.canvasWrapper.size / 50);
         this.colour = context.colourNeutral;
         this.animationId = - 1;
     }
 
     Coordinate.prototype._blinkInterval = 300; // ms
+
     Coordinate.prototype.animationDuration = 2400; // ms
 
     Coordinate.prototype.draw = function() {
@@ -130,6 +131,7 @@
     }
 
     Raster.prototype.size = 9;
+
     Raster.prototype.dotSpacing = 2;
 
     Raster.prototype.getDots = function() {
@@ -286,7 +288,6 @@
     CanvasWrapper.prototype.drawHintButton = function(showHint) {
         var canvasContext = this.canvas.getContext("2d");
         var count = this.polyline.maxNodeCount - this.polyline.nodeCount; 
-
         var backgroundHeight = this.hintButtonHeight;
         var backgroundWidth = this.hintButtonWidth;
         var backgroundY = this.height - backgroundHeight;
@@ -294,9 +295,6 @@
         var backgroundPointerY = backgroundY + backgroundHeight / 2;
         var fontSize = backgroundHeight * 0.7;
         var textPadding = (backgroundHeight - fontSize) * 0.7;
-
-        canvasContext.font = fontSize + 'px sans-serif'
-        canvasContext.lineWidth = 1;
 
         // Background
         canvasContext.fillStyle = showHint ? context.colourTextBackgroundDark : context.colourFail;
@@ -311,6 +309,8 @@
         canvasContext.fill();
 
         // Text
+        canvasContext.font = fontSize + 'px sans-serif';
+        canvasContext.lineWidth = 1;
         canvasContext.fillStyle = 'white';
         canvasContext.fillText(context.textButtonHint, textPadding, this.height - textPadding);
 
@@ -389,6 +389,7 @@
             })
         }
 
+        // Show happy/sad face
         setTimeout(function() {
             var canvasContext = this.canvas.getContext("2d");
 
@@ -436,7 +437,7 @@
                     this.hintReceived = false;
                 }
 
-                this.startGame();
+                this.startGame(); // Next round
             }
         } else {
             var node = this.raster.getCoordinate(event.layerX, event.layerY);
@@ -476,9 +477,9 @@
     function Polyline(parent) {
         this.canvasWrapper = parent;
         this.nodes = new Array(this.maxNodeCount);
-        this.nodeCount = 0;
-        this.previewNode = null;
-        this.lineWidth = Math.max(3, this.canvasWrapper.size / 67);
+        this.nodeCount = 0; // Number of nodes excluding the preview node
+        this.previewNode = null; // Current node below the cursor
+        this.lineWidth = Math.max(3, this.canvasWrapper.size / 70);
     }
 
     Polyline.prototype.maxNodeCount = 5;
@@ -514,10 +515,11 @@
                 var x = this.nodes[i].getPositionX();
                 var y = this.nodes[i].getPositionY();
 
-                if (i == 0) 
+                if (i == 0) {
                     canvasContext.moveTo(x, y);
-                else
+                } else {
                     canvasContext.lineTo(x, y);
+                }
             }
 
             canvasContext.lineTo(this.previewNode.getPositionX(), this.previewNode.getPositionY());
