@@ -1,7 +1,6 @@
 (function() {
     "use strict";
 
-    // TODO to stylesheet
     var context = {
         canvasId: "canvas-nine-dots-puzzle",
         showHintButtonAfterRound: 2,
@@ -14,7 +13,7 @@
         colourFace: "rgb(255, 217, 26)",
         colourText: "white",
         colourTextBackgroundDark: 'rgb(51, 51, 51)',
-        colourTextBackgroundLight: 'rgb(115, 115, 115)',
+        colourTextBackgroundLight: 'rgb(115, 115, 115)'
     };
 
     function Coordinate(parent, x, y) {
@@ -207,8 +206,8 @@
             var epsilon = 0.0001;
 
             for (x = startNode.x; x <= targetNode.x; ++x) {
-                if (Math.abs(Math.floor(y) - y) < epsilon) {
-                    this.coordinates[x][Math.floor(y)].updateState(true);
+                if (Math.abs(Math.round(y) - y) < epsilon) {
+                    this.coordinates[x][Math.round(y)].updateState(true);
                 }
 
                 y += slope;
