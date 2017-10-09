@@ -1,3 +1,25 @@
+/*
+Copyright (c) 2017 Lukas Gebhard
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+
 (function() {
     "use strict";
 
@@ -440,7 +462,7 @@
                 this.startGame(); // Next round
             }
         } else {
-            var node = this.raster.getCoordinate(event.layerX, event.layerY);
+            var node = this.raster.getCoordinate(this.getCursorX(event), this.getCursorY(event));
 
             this.polyline.addNode(node);
             this.raster.updateState(this.polyline);
@@ -456,8 +478,8 @@
 
     CanvasWrapper.prototype.hintButtonSelected = function(event) {
         return this.faceDisplayed && this.showHintButton()
-            && event.layerY >= this.height - this.hintButtonHeight
-            && event.layerX <= this.hintButtonWidth;
+            && this.getCursorY(event) >= this.height - this.hintButtonHeight
+            && this.getCursorX(event) <= this.hintButtonWidth;
     }
 
     CanvasWrapper.prototype.onMouseMove = function(event) {  
@@ -466,13 +488,25 @@
                 this.canvas.style.cursor = this.hintButtonSelected(event) ? 'pointer' : 'default';
             }
         } else {
-            var node = this.raster.getCoordinate(event.layerX, event.layerY);
+            var node = this.raster.getCoordinate(this.getCursorX(event), this.getCursorY(event));
           
             this.polyline.addNode(node, true);
             this.raster.updateState(this.polyline);
             this.draw();        
         }
     };
+
+    CanvasWrapper.prototype.getCursorX = function(event) {
+        var rect = this.canvas.getBoundingClientRect();
+        
+        return event.clientX - rect.left;
+    }
+
+    CanvasWrapper.prototype.getCursorY = function(event) {
+        var rect = this.canvas.getBoundingClientRect();
+        
+        return event.clientY - rect.top;
+    }
 
     function Polyline(parent) {
         this.canvasWrapper = parent;
