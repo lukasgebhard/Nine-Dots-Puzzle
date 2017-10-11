@@ -24,13 +24,13 @@ SOFTWARE.
 TODO
 
 JS---
-~ CSS Attribute vs. Config
 ~ Parse class attribute to get configs
 
 PHP---
-~ Basic plugin functionality
 ~ Short code
 ~ Parameter passing
+
+Documentation
  
 */
 (function() {
