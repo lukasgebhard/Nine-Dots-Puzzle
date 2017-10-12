@@ -14,6 +14,7 @@ class MrKojoNineDotsPuzzle
 {
 	static $plugin_version = '1.0';
 	static $plugin_name = 'mrkojo-nine-dots-puzzle';
+	static $shortcode = 'nine-dots-puzzle';
 	static $enqueue_script = false;
 	static $default_config = array (
 		'canvas_id'			=> 'canvas-nine-dots-puzzle',
@@ -59,6 +60,12 @@ class MrKojoNineDotsPuzzle
 		return $html; 
 	}
 
+	static function no_texturize_shortcode($shortcodes)
+	{
+		$shortcodes[] = self::$shortcode;
+		return $shortcodes;
+	}
+
 	static function register_script()
 	{
 		wp_register_script( $pluginName, plugins_url( 'nine-dots-puzzle.js', __FILE__ ), array(), $plugin_version, true );
@@ -75,7 +82,9 @@ class MrKojoNineDotsPuzzle
 
 	static function init()
 	{
-		add_shortcode( 'nine-dots-puzzle', array( __CLASS__, 'handle_shortcode' ) );
+		add_shortcode( self::$shortcode, array( __CLASS__, 'handle_shortcode' ) );
+		add_filter( 'widget_text', 'do_shortcode', 11 );
+		add_filter( 'no_texturize_shortcodes', array( __CLASS__, 'no_texturize_shortcode' ) );
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'register_script' ) );
 		add_action( 'wp_footer', array( __CLASS__, 'enqueue_script' ) );
 	}

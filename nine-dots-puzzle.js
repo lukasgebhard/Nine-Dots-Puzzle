@@ -24,11 +24,7 @@ SOFTWARE.
 TODO
 
 JS---
-~ Parse class attribute to get configs
-
-PHP---
-~ Short code
-~ Parameter passing
+~ Parse data-* attributes to get configs
 
 Documentation
  
