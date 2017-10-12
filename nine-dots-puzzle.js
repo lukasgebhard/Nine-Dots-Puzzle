@@ -41,7 +41,7 @@ Documentation
         showHintButtonAfterRound: 2,
         textButtonHint: "Hint",
         textHint: "Think outside the box.",
-        colourBackround: "rgb(153, 221, 255)",
+        colourBackground: "rgb(153, 221, 255)",
         colourNeutral: "rgb(0, 0, 128)",
         colourSuccess: "rgb(0, 128, 0)",
         colourFail: "rgb(230, 46, 0)",
@@ -296,7 +296,7 @@ Documentation
 
     NineDotsPuzzle.prototype = {
         draw : function() {
-            this.drawingContext.fillStyle = getConfig("colourBackround");
+            this.drawingContext.fillStyle = getConfig("colourBackground");
             this.drawingContext.fillRect(0, 0, this.width, this.height);
 
             this.raster.draw();
