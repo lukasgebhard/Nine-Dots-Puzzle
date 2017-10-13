@@ -98,7 +98,7 @@ class MrKojoNineDotsPuzzle
     {
         if (self::$enqueue_script)
         {
-            wp_enqueue_script( self::$plugin_name, plugins_url( self::$script_name, __FILE__ ), array(), self::$plugin_version, true );
+            wp_enqueue_script( self::$plugin_id, plugins_url( self::$script_name, __FILE__ ), array(), self::$plugin_version, true );
         }
     }
 
