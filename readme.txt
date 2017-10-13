@@ -3,6 +3,8 @@ Contributors: mrkojo
 Tags: puzzle, 2D, game, riddle, javascript, shortcode, widget, think, outside,
 box, metaphor
 Tested up to: 4.6
+Requires at least: 3.0
+Stable: trunk
 
 The famous Nine Dots Puzzle. Think outside the box!
 
