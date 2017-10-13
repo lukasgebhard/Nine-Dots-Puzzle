@@ -1,7 +1,6 @@
 === Nine Dots Puzzle ===
 Contributors: mrkojo
-Tags: puzzle, 2D, game, riddle, javascript, shortcode, widget, think, outside,
-box, metaphor
+Tags: nine, dots, puzzle, 2D, game, riddle, javascript, shortcode, widget, think, outside, box, metaphor
 Tested up to: 4.6
 Requires at least: 3.0
 Stable: trunk
@@ -10,8 +9,7 @@ The famous Nine Dots Puzzle. Think outside the box!
 
 == Description ==
 
-This plugin allows visitors of your website to play the famous Nine Dots
-Puzzle as an interactive 2D app.
+This plugin allows visitors of your website to solve the famous Nine Dots Puzzle as an interactive 2D app.
 
 = Features =
 
@@ -26,7 +24,7 @@ Puzzle as an interactive 2D app.
 1. Visit *Plugins > Add New* and search for "Nine Dots Puzzle"
 1. Click on *Install*
 1. Activate the plugin from your plugins page.
-1. Insert the code *[nine-dots-puzzle]* (including the brackets) into your
+1. Insert the phrase *[nine-dots-puzzle]* (including the brackets) into your
 Wordpress page, post, or text widget.
 1. Optionally, customise the puzzle by specifying some parameters. For
 example, *[nine-dots-puzzle size="300px" colour_background="brown"]* will
@@ -35,9 +33,9 @@ insert the puzzle with the given size and background colour.
 The following configuration parameters are available:
 
 * *size*: The width and height of the puzzle (Default: "250px")
-* *show_hint_button_after_round*: The number of rounds after which a hint button is shown (Default: "2")
+* *show_hint_button_after_round*: The number of rounds after which a 'hint button' is shown (Default: "2")
 * *text_button_hint*: The text on the hint button (Default: "Hint")
-* *text_hint*: The hint (Default: "Think outside the box.")
+* *text_hint*: The hint that is displayed after clicking the hint button (Default: "Think outside the box.")
 * *colour_background*: The background colour (Default: "rgb(0, 0, 128)")
 * *colour_neutral*: The 'neutral' colour (Default: "rgb(153, 221, 255)")
 * *colour_success*: The 'success' colour (Default: "rgb(0, 128, 0)")
