@@ -14,11 +14,12 @@ class MrKojoNineDotsPuzzle
 {
 	static $plugin_version = '1.0';
 	static $plugin_name = 'mrkojo-nine-dots-puzzle';
+	static $script_name = 'nine-dots-puzzle.js';
 	static $shortcode = 'nine-dots-puzzle';
 	static $enqueue_script = false;
+	static $canvas_id = 'canvas-nine-dots-puzzle';
 	static $default_config = array (
-		'canvas_id'			=> 'canvas-nine-dots-puzzle',
-		'size'				=> '250px',
+		'canvas_size'			=> '250px',
 		'show_hint_button_after_round'	=>  2,
 		'text_button_hint'		=> 'Hint',
 		'text_hint'			=> 'Think outside the box.',
@@ -42,9 +43,9 @@ class MrKojoNineDotsPuzzle
 		extract( $atts );
 
 		$html = '<canvas ';
-		$html .= 'id="' . $canvas_id . '" ';
-		$html .= 'width="' . $size . '" ';
-		$html .= 'height="' . $size . '" ';
+		$html .= 'id="' . self::$canvas_id . '" ';
+		$html .= 'width="' . $canvas_size . '" ';
+		$html .= 'height="' . $canvas_size . '" ';
 		$html .= 'data-show_hint_button_after_round="' . $show_hint_button_after_round . '" ';
 		$html .= 'data-text_button_hint="' . $text_button_hint . '" ';
 		$html .= 'data-text_hint="' . $text_hint . '" ';
@@ -68,7 +69,7 @@ class MrKojoNineDotsPuzzle
 
 	static function register_script()
 	{
-		wp_register_script( $pluginName, plugins_url( 'nine-dots-puzzle.js', __FILE__ ), array(), $plugin_version, true );
+		wp_register_script( $pluginName, plugins_url( self::$script_name, __FILE__ ), array(), $plugin_version, true );
 		//error_log('     register          ', 3, '/tmp/nine-dots-puzzle-errors.log');
 	}
 
@@ -76,7 +77,7 @@ class MrKojoNineDotsPuzzle
 	{
 		if (self::$enqueue_script)
 		{
-			wp_enqueue_script( self::$plugin_name, plugins_url( 'nine-dots-puzzle.js', __FILE__ ), array(), self::$plugin_version, true );
+			wp_enqueue_script( self::$plugin_name, plugins_url( self::$script_name, __FILE__ ), array(), self::$plugin_version, true );
 		}
 	}
 

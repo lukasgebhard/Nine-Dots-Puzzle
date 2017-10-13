@@ -1,4 +1,6 @@
 /*
+Nine Dots Puzzle
+
 Copyright (c) 2017 Lukas Gebhard <github.com/mr-kojo/Nine-Dots-Puzzle>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,42 +25,63 @@ SOFTWARE.
 /*
 TODO
 
-JS---
-~ Parse data-* attributes to get configs
-
 Documentation
  
 */
-(function() {
+
+var NINE_DOTS_PUZZLE_CANVAS_ID = "canvas-nine-dots-puzzle";
+var NINE_DOTS_PUZZLE_DEFAULT_CONFIG = {
+    show_hint_button_after_round: 2,
+    text_button_hint: "Hint",
+    text_hint: "Think outside the box.",
+    colour_background: "rgb(0, 0, 128)",
+    colour_neutral: "rgb(153, 221, 255)",
+    colour_success: "rgb(0, 128, 0)",
+    colour_fail: "rgb(230, 46, 0)",
+    colour_face: "rgb(255, 217, 26)",
+    colour_text: "white",
+    colour_text_background_dark: "rgb(51, 51, 51)",
+    colour_text_background_light: "rgb(115, 115, 115)"
+};
+
+(function(canvasId, defaultConfig) {
     "use strict";
 
-    var defaultConfig = {
-        canvasId: "canvas-nine-dots-puzzle",
-        showHintButtonAfterRound: 2,
-        textButtonHint: "Hint",
-        textHint: "Think outside the box.",
-        colourBackground: "rgb(153, 221, 255)",
-        colourNeutral: "rgb(0, 0, 128)",
-        colourSuccess: "rgb(0, 128, 0)",
-        colourFail: "rgb(230, 46, 0)",
-        colourFace: "rgb(255, 217, 26)",
-        colourText: "white",
-        colourTextBackgroundDark: "rgb(51, 51, 51)",
-        colourTextBackgroundLight: "rgb(115, 115, 115)"
-    };
-
-    var getConfig = function(key) {
-        return defaultConfig[key]; //TODO return options[key] ? options[key] : defaultConfig[key];
+    function Context() {
+        this.canvas = document.getElementById(canvasId);
+        this.height = this.canvas.height;
+        this.width = this.canvas.width;
+        this.size = Math.min(this.height, this.width);
     }
 
-    function Coordinate(parent, x, y) {
-        this.raster = parent;
+    Context.prototype = {
+        getCanvas : function() {
+            return this.canvas;
+        },
+
+        get : function(key) {
+            if (key === "height" || key === "width" || key === "size") {
+                return this[key];
+            }
+
+            var config = this.canvas.dataset[key];
+
+            return config ? config : defaultConfig[key];
+        },
+
+        getDrawingContext : function() {
+            return this.canvas.getContext("2d");
+        }
+    };
+
+    function Coordinate(x, y, context) {
+        this.context = context;
         this.x = x;
         this.y = y;
         this.covered = false;
         this.isDot = false;
-        this.radius = Math.max(4, this.raster.nineDotsPuzzle.size / 50);
-        this.colour = getConfig("colourNeutral");
+        this.radius = Math.max(4, this.context.get("size") / 50);
+        this.colour = this.context.get("colour_neutral");
         this.animationId = - 1;
     }
 
@@ -69,7 +92,7 @@ Documentation
 
         draw : function() {
             if (this.isDot) {
-                var drawingContext = this.raster.nineDotsPuzzle.drawingContext;
+                var drawingContext = this.context.getDrawingContext();
 
                 drawingContext.fillStyle = this.colour;
                 drawingContext.strokeStyle = this.colour;
@@ -83,7 +106,7 @@ Documentation
 
         updateState : function(covered) {
             this.covered = covered;
-            this.colour = this.covered ? getConfig("colourSuccess") : getConfig("colourNeutral");
+            this.colour = this.covered ? this.context.get("colour_success") : this.context.get("colour_neutral");
         },
 
         blink : function() {
@@ -96,8 +119,8 @@ Documentation
 
         _blink : function() {
             return setInterval(function() {
-                this.colour = this.colour === getConfig("colourFail") ? getConfig("colourNeutral") 
-                    : getConfig("colourFail");
+                this.colour = this.colour === this.context.get("colour_fail") ? this.context.get("colour_neutral") 
+                    : this.context.get("colour_fail");
                 this.draw();
             }.bind(this), Coordinate.prototype._blinkInterval);
         },
@@ -115,7 +138,7 @@ Documentation
         _expand : function() {
             if (!this._scalingFactor) {
                 var rStart = this.radius;
-                var rTarget = this.raster.nineDotsPuzzle.size / 2;
+                var rTarget = this.context.get("size") / 2;
                 var exponent = (this.animationDuration / 1000) * 60 // 60 frames per second
 
                 this._scalingFactor = Math.pow(rTarget / rStart, 1 / exponent);
@@ -138,7 +161,7 @@ Documentation
         },
 
         _getPosition : function(horizontal) {
-            var rasterSpacing = this.raster.nineDotsPuzzle.size / (Raster.prototype.size + 1);
+            var rasterSpacing = this.context.get("size") / (Raster.prototype.size + 1);
             var padding = rasterSpacing;
 
             return horizontal ? padding + this.x * rasterSpacing : padding + this.y * rasterSpacing;
@@ -149,16 +172,16 @@ Documentation
         }
     };
 
-    function Raster(parent) {
+    function Raster(context) {
         var x, y, dot;
-        this.nineDotsPuzzle = parent;
+        this.context = context;
         this.coordinates = new Array(Raster.prototype.size);
 
         for (x = 0; x < Raster.prototype.size; ++x) {
             this.coordinates[x] = new Array(Raster.prototype.size);
 
             for (y = 0; y < Raster.prototype.size; ++y) {
-                this.coordinates[x][y] = new Coordinate(this, x, y);
+                this.coordinates[x][y] = new Coordinate(x, y, context);
             }
         }
 
@@ -201,7 +224,7 @@ Documentation
         },
 
         _getGridIndex : function(clickPosition) {
-            var rasterSpacing = this.nineDotsPuzzle.size / (Raster.prototype.size + 1);
+            var rasterSpacing = this.context.get("size") / (Raster.prototype.size + 1);
             var padding = rasterSpacing;
             var gridIndex = Math.round((clickPosition - padding) / rasterSpacing);
 
@@ -276,12 +299,13 @@ Documentation
         }
     };
 
-    function NineDotsPuzzle() {
-        this.canvas = document.getElementById(getConfig("canvasId"));
-        this.drawingContext = this.canvas.getContext("2d");
-        this.height = this.canvas.height;
-        this.width = this.canvas.width;
-        this.size = Math.min(this.height, this.width);
+    function NineDotsPuzzle(context) {   
+        this.context = context;
+        this.canvas = this.context.canvas;    
+        this.drawingContext = this.context.getDrawingContext();
+        this.size = this.context.size;
+        this.width = this.context.width;
+        this.height = this.context.height;
         this.hintButtonHeight = this.height * 0.1;
         this.hintButtonWidth = this.size * 0.2;  
         this.hintReceived = false;
@@ -292,7 +316,7 @@ Documentation
 
     NineDotsPuzzle.prototype = {
         draw : function() {
-            this.drawingContext.fillStyle = getConfig("colourBackground");
+            this.drawingContext.fillStyle = this.context.get("colour_background");
             this.drawingContext.fillRect(0, 0, this.width, this.height);
 
             this.raster.draw();
@@ -308,8 +332,8 @@ Documentation
             var fontSize = backgroundRadius / 2;
 
             this.drawingContext.font = fontSize + "px sans-serif"
-            this.drawingContext.strokeStyle = getConfig("colourTextBackgroundDark");
-            this.drawingContext.fillStyle = getConfig("colourTextBackgroundDark");
+            this.drawingContext.strokeStyle = this.context.get("colour_text_background_dark");
+            this.drawingContext.fillStyle = this.context.get("colour_text_background_dark");
             this.drawingContext.lineWidth = 1;
 
             // Background
@@ -319,7 +343,7 @@ Documentation
             this.drawingContext.stroke();
 
             // Text
-            this.drawingContext.fillStyle = getConfig("colourText");
+            this.drawingContext.fillStyle = this.context.get("colour_text");
             this.drawingContext.fillText(count, textPaddingX, this.height - textPaddingY);
         },
 
@@ -334,9 +358,9 @@ Documentation
             var textPadding = (backgroundHeight - fontSize) * 0.7;
 
             // Background
-            this.drawingContext.fillStyle = showHint ? getConfig("colourTextBackgroundDark") : getConfig("colourFail");
+            this.drawingContext.fillStyle = showHint ? this.context.get("colour_text_background_dark") : this.context.get("colour_fail");
             this.drawingContext.fillRect(0, backgroundY, this.width, backgroundHeight);
-            this.drawingContext.fillStyle = getConfig("colourTextBackgroundLight");
+            this.drawingContext.fillStyle = this.context.get("colour_text_background_light");
             this.drawingContext.beginPath();
             this.drawingContext.moveTo(0, backgroundY);
             this.drawingContext.lineTo(backgroundWidth, backgroundY);
@@ -348,11 +372,11 @@ Documentation
             // Text
             this.drawingContext.font = fontSize + "px sans-serif";
             this.drawingContext.lineWidth = 1;
-            this.drawingContext.fillStyle = "white";
-            this.drawingContext.fillText(getConfig("textButtonHint"), textPadding, this.height - textPadding);
+            this.drawingContext.fillStyle = this.context.get("colour_text");
+            this.drawingContext.fillText(this.context.get("text_button_hint"), textPadding, this.height - textPadding);
 
             if (showHint) {
-                this.drawingContext.fillText(getConfig("textHint"), backgroundPointerX + textPadding, this.height - textPadding);         
+                this.drawingContext.fillText(this.context.get("text_hint"), backgroundPointerX + textPadding, this.height - textPadding);         
             }
         },
 
@@ -367,11 +391,11 @@ Documentation
             this.drawingContext.lineWidth = Math.max(3, this.size / 67);
 
             // Background
-            this.drawingContext.fillStyle = this.puzzleSolved ? getConfig("colourSuccess") : getConfig("colourFail");
+            this.drawingContext.fillStyle = this.puzzleSolved ? this.context.get("colour_success") : this.context.get("colour_fail");
             this.drawingContext.fillRect(0, 0, this.width, this.height);
 
             // Head
-            this.drawingContext.fillStyle = getConfig("colourFace");
+            this.drawingContext.fillStyle = this.context.get("colour_face");
             this.drawingContext.beginPath();
             this.drawingContext.arc(centre, centre, headRadius, 0, Math.PI * 2, true); 
             this.drawingContext.fill();
@@ -446,12 +470,12 @@ Documentation
 
         showHintButton : function() {
             return this.hasGameEnded && !this.puzzleSolved && !this.hintReceived
-                && this.currentRound >= getConfig("showHintButtonAfterRound");
+                && this.currentRound >= this.context.get("show_hint_button_after_round");
         },
 
         startGame : function() {
-            this.raster = new Raster(this);
-            this.polyline = new Polyline(this);
+            this.raster = new Raster(this.context);
+            this.polyline = new Polyline(this.context);
             this.hasGameEnded = false;
             this.faceDisplayed = false;
             this.puzzleSolved = false;
@@ -521,12 +545,12 @@ Documentation
         }
     };
 
-    function Polyline(parent) {
-        this.nineDotsPuzzle = parent;
+    function Polyline(context) {
+        this.context = context
         this.nodes = new Array(this.maxNodeCount);
         this.nodeCount = 0; // Number of nodes excluding the preview node
         this.previewNode = null; // Current node below the cursor
-        this.lineWidth = Math.max(3, this.nineDotsPuzzle.size / 70);
+        this.lineWidth = Math.max(3, this.context.get("size") / 70);
     }
 
     Polyline.prototype = {
@@ -550,10 +574,10 @@ Documentation
 
         draw : function() {        
             if (this.nodeCount > 0) {
-                var drawingContext = this.nineDotsPuzzle.drawingContext;
+                var drawingContext = this.context.getDrawingContext();
                 var i;
 
-                drawingContext.strokeStyle = getConfig("colourSuccess");
+                drawingContext.strokeStyle = this.context.get("colour_success");
                 drawingContext.lineWidth = this.lineWidth;
                 drawingContext.lineCap = "round";
                 drawingContext.beginPath();
@@ -590,5 +614,5 @@ Documentation
         }
     };
 
-    (new NineDotsPuzzle()).startGame();
-})();
+    (new NineDotsPuzzle(new Context())).startGame();
+})(NINE_DOTS_PUZZLE_CANVAS_ID, NINE_DOTS_PUZZLE_DEFAULT_CONFIG);
