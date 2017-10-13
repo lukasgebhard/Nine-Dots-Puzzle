@@ -3,6 +3,8 @@ Contributors: mrkojo
 Tags: puzzle, 2D, game, riddle, javascript, shortcode, widget, think, outside,
 box, metaphor
 Tested up to: 4.6
+Requires at least: 3.0
+Stable: trunk
 
 The famous Nine Dots Puzzle. Think outside the box!
 
@@ -32,15 +34,15 @@ insert the puzzle with the given size and background colour.
 
 The following configuration parameters are available:
 
-* *size*				The width and height of the puzzle (Default: "250px")
-* *show_hint_button_after_round*	The number of rounds after which a hint button is shown (Default: "2")
-* *text_button_hint*			The text on the hint button (Default: "Hint")
-* *text_hint*				The hint (Default: "Think outside the box.")
-* *colour_background*			The background colour (Default: "rgb(0, 0, 128)")
-* *colour_neutral*			The 'neutral' colour (Default: "rgb(153, 221, 255)")
-* *colour_sucess*			The 'success' colour (Default: "rgb(0, 128, 0)")
-* *colour_fail*				The 'fail' colour (Default: "rgb(179, 0, 0)")
-* *colour_face*				The 'face' colour (Default: "rgb(255,217, 26)")
-* *colour_text*				The text colour (Default: "white")
-* *colour_text_background_dark*		The 'text_background_dark' colour (Default: "rgb(51. 51, 51)")
-* *colour_text_background_light*	The 'text_background_light' colour (Default: "rgb(115, 115, 115)")
+* *size*: The width and height of the puzzle (Default: "250px")
+* *show_hint_button_after_round*: The number of rounds after which a hint button is shown (Default: "2")
+* *text_button_hint*: The text on the hint button (Default: "Hint")
+* *text_hint*: The hint (Default: "Think outside the box.")
+* *colour_background*: The background colour (Default: "rgb(0, 0, 128)")
+* *colour_neutral*: The 'neutral' colour (Default: "rgb(153, 221, 255)")
+* *colour_success*: The 'success' colour (Default: "rgb(0, 128, 0)")
+* *colour_fail*: The 'fail' colour (Default: "rgb(179, 0, 0)")
+* *colour_face*: The 'face' colour (Default: "rgb(255,217, 26)")
+* *colour_text*: The text colour (Default: "white")
+* *colour_text_background_dark*: The 'text_background_dark' colour (Default: "rgb(51. 51, 51)")
+* *colour_text_background_light*: The 'text_background_light' colour (Default: "rgb(115, 115, 115)")
