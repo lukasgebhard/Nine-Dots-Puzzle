@@ -24,11 +24,8 @@ This plugin allows visitors of your website to solve the famous Nine Dots Puzzle
 1. Visit *Plugins > Add New* and search for "Nine Dots Puzzle"
 1. Click on *Install*
 1. Activate the plugin from your plugins page.
-1. Insert the phrase *[nine-dots-puzzle]* (including the brackets) into your
-Wordpress page, post, or text widget.
-1. Optionally, customise the puzzle by specifying some parameters. For
-example, *[nine-dots-puzzle size="300px" colour_background="brown"]* will
-insert the puzzle with the given size and background colour. 
+1. Insert the phrase *[nine-dots-puzzle]* (including the brackets) into your Wordpress page, post, or text widget.
+1. Optionally, customise the puzzle by specifying some parameters. For example, *[nine-dots-puzzle size="300px" colour_background="brown"]* will insert the puzzle with the given size and background colour. 
 
 The following configuration parameters are available:
 
