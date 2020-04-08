@@ -8,7 +8,7 @@ Simply follow <a href="https://wordpress.org/plugins/nine-dots-puzzle/">these in
 ## Setup as a JavaScript app
 1. Upload the script <code>nine_dots_puzzle.js</code> to your web browser.
 2. Include the script into your HTML file. For example, add <code>\<script src="nine-dots-puzzle.js" defer\>\</script\></code> to your HTML header.
-3. Add <code>\<canvas id="canvas-nine-dots-puzzle"\>\</canvas\></code> wherever you want the puzzle to appear.
+3. Add <code>\<canvas id="canvas-nine-dots-puzzle" width="250px" height="250px"\>\</canvas\></code> wherever you want the puzzle to appear.
 
 To customize the puzzle, add HTML5 data attributes to the canvas element. For instance, <code>\<canvas id="canvas-nine-dots-puzzle" width="300px" height="300px" data-size="300px" data-colour_background="purple”\>\</canvas\></code> will insert the puzzle as a purple canvas of 300 x 300 pixels.
 
