@@ -22,9 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-///////////////////////////////////////////
-// Feel free to edit this configuration: //
-///////////////////////////////////////////
 var NINE_DOTS_PUZZLE_CANVAS_ID = "canvas-nine-dots-puzzle";
 var NINE_DOTS_PUZZLE_DEFAULT_CONFIG = {
     show_hint_button_after_round: 2,
@@ -40,9 +37,6 @@ var NINE_DOTS_PUZZLE_DEFAULT_CONFIG = {
     colour_text_background_light: "rgb(115, 115, 115)"
 };
 
-///////////////////////////////////////////
-// No need to edit below this line       //
-///////////////////////////////////////////
 (function(canvasId, defaultConfig) {
     "use strict";
 
