@@ -5,7 +5,7 @@ The famous Nine-Dots-Puzzle as an interactive 2D app.<br />
 ## Setup as a WordPress plugin
 Simply follow <a href="https://wordpress.org/plugins/nine-dots-puzzle/">these instructions</a>.
 
-## Setup as a plain JavaScript app
+## Setup as a JavaScript app
 1. Upload the script <code>nine_dots_puzzle.js</code> to your web browser.
 2. Include the script into your HTML file. For example, add <code>\<script src="nine-dots-puzzle.js" defer\>\</script\></code> to your HTML header.
 3. Add <code>\<canvas id="canvas-nine-dots-puzzle"\>\</canvas\></code> wherever you want the puzzle to appear.
