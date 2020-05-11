@@ -1,6 +1,6 @@
 # Nine-Dots-Puzzle
 The famous Nine-Dots-Puzzle as an interactive 2D app.<br />
-<a href="http://www2.informatik.uni-freiburg.de/~gebhardl/">Try it out</a> and feel free to add it to your homepage.
+<a href="http://lukasgebhard.de/demos.php">Try it out</a> and feel free to add it to your homepage.
 
 ## Setup as a WordPress plugin
 Simply follow <a href="https://wordpress.org/plugins/nine-dots-puzzle/">these instructions</a>.

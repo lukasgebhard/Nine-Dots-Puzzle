@@ -1,15 +1,16 @@
 === Nine Dots Puzzle ===
 Contributors: mrkojo
-Tags: nine, dots, puzzle, 2D, game, riddle, javascript, shortcode, widget, think, outside, box, metaphor
-Tested up to: 4.6
+Tags: riddle, puzzle, eureka, inspiration, brain, think-out-of-the-box, think-beyond-the-box, think-outside-the-square
+Tested up to: 5.2
 Requires at least: 3.0
 Stable: trunk
 
-The famous Nine Dots Puzzle. Think outside the box!
+The famous & inspirational 9-dot problem. Think outside the box!
 
 == Description ==
 
-This plugin allows visitors of your website to solve the famous Nine Dots Puzzle as an interactive 2D app.
+This plugin allows visitors of your website to solve the famous and inspirational Nine Dots Puzzle as an interactive 2D app.
+[Here you can try it out yourself.](http://lukasgebhard.de/demos.php)
 
 = Features =
 
