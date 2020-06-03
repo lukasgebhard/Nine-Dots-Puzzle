@@ -1,11 +1,11 @@
 <?php
 /*
 Plugin Name: Nine Dots Puzzle
-Plugin URI: https://github.com/mr-kojo/Nine-Dots-Puzzle
+Plugin URI: https://github.com/lukasgebhard/Nine-Dots-Puzzle
 Description: The famous Nine Dots Puzzle. Think outside the box!
 Version: 1.0
 Author: Lukas Gebhard
-Author URI: https://github.com/mr-kojo
+Author URI: https://github.com/lukasgebhard
 License: MIT
 License URI: https://opensource.org/licenses/MIT
  */
