@@ -1,7 +1,7 @@
 /*
 NINE DOTS PUZZLE
 
-Copyright (c) 2017 Lukas Gebhard <github.com/mr-kojo/Nine-Dots-Puzzle>
+Copyright (c) 2017 Lukas Gebhard <github.com/lukasgebhard/Nine-Dots-Puzzle>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
